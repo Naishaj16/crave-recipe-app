@@ -606,3 +606,22 @@ footer>span {
 .add-modal .modal-content h2 {
   margin-bottom: 0;
 }
+
+.delete-recipe-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: white;
+  color: #c34b4b;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.delete-recipe-btn:hover {
+  background: #c34b4b;
+  color: white;
+}

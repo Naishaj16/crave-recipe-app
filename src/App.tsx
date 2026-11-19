@@ -124,6 +124,7 @@ type Recipe = {
   description: string;
   ingredients: string[];
   instructions: string[];
+  isDeleted?: boolean;
 };
 
 function App() {
@@ -158,6 +159,8 @@ function App() {
   const categories = ["All", "Italian", "Breakfast", "Healthy", "Dessert"];
 
   const filteredRecipes = recipes.filter((recipe) => {
+    if (recipe.isDeleted) return false;
+
     const matchesSearch =
       recipe.name.toLowerCase().includes(search.toLowerCase()) ||
       recipe.category.toLowerCase().includes(search.toLowerCase());
@@ -174,6 +177,29 @@ function App() {
         ? previous.filter((item) => item !== id)
         : [...previous, id]
     );
+  };
+  const deleteRecipe = (id: number) => {
+    const confirmed = window.confirm(
+      "Move this recipe to Trash?"
+    );
+
+    if (!confirmed) return;
+
+    setRecipes((previous) =>
+      previous.map((recipe) =>
+        recipe.id === id
+          ? { ...recipe, isDeleted: true }
+          : recipe
+      )
+    );
+
+    setFavorites((previous) =>
+      previous.filter((item) => item !== id)
+    );
+
+    if (selectedRecipe === id) {
+      setSelectedRecipe(null);
+    }
   };
 
   const activeRecipe = recipes.find(
@@ -278,9 +304,22 @@ function App() {
                 <div className="recipe-image">
                   <img src={recipe.image} alt={recipe.name} />
                   <button
+                    className="delete-recipe-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteRecipe(recipe.id);
+                    }}
+                    title="Delete recipe"
+                  >
+                    ×
+                  </button>
+                  <button
                     className={`favorite-btn ${favorites.includes(recipe.id) ? "liked" : ""
                       }`}
-                    onClick={() => toggleFavorite(recipe.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(recipe.id);
+                    }}
                     aria-label="Toggle favorite"
                   >
                     {favorites.includes(recipe.id) ? "♥" : "♡"}
@@ -484,6 +523,7 @@ function App() {
                       .split("\n")
                       .map((item) => item.trim())
                       .filter(Boolean),
+                    isDeleted: false,
                   };
 
                   console.log("New recipe captured:", recipeToAdd);
