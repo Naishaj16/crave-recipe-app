@@ -1,6 +1,11 @@
 
 import { useEffect, useState } from "react";
 import "./App.css";
+import {
+  getRecipes,
+  createRecipe,
+  deleteRecipe as deleteRecipeAPI,
+} from "./services/recipeService";
 
 
 const initialRecipes = [
@@ -148,13 +153,22 @@ function App() {
     ingredients: "",
     instructions: "",
   });
-  const [recipes, setRecipes] = useState<Recipe[]>(() => {
-    const saved = localStorage.getItem("crave-recipes");
-    return saved ? JSON.parse(saved) : initialRecipes;
-  });
+  const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
+  const [loadingRecipes, setLoadingRecipes] = useState(true);
+
   useEffect(() => {
-    localStorage.setItem("crave-recipes", JSON.stringify(recipes));
-  }, [recipes]);
+    getRecipes()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setRecipes(data);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to load recipes:", error);
+        alert("Unable to load recipes. Check if your backend is running.");
+      })
+      .finally(() => setLoadingRecipes(false));
+  }, []);
 
   const categories = ["All", "Italian", "Breakfast", "Healthy", "Dessert"];
 
@@ -178,27 +192,76 @@ function App() {
         : [...previous, id]
     );
   };
-  const deleteRecipe = (id: number) => {
-    const confirmed = window.confirm(
-      "Move this recipe to Trash?"
-    );
-
+  const deleteRecipe = async (id: number) => {
+    const confirmed = window.confirm("Move this recipe to Trash?");
     if (!confirmed) return;
 
-    setRecipes((previous) =>
-      previous.map((recipe) =>
-        recipe.id === id
-          ? { ...recipe, isDeleted: true }
-          : recipe
-      )
-    );
+    try {
+      await deleteRecipeAPI(id);
 
-    setFavorites((previous) =>
-      previous.filter((item) => item !== id)
-    );
+      setRecipes((previous) =>
+        previous.map((recipe) =>
+          recipe.id === id ? { ...recipe, isDeleted: true } : recipe
+        )
+      );
 
-    if (selectedRecipe === id) {
-      setSelectedRecipe(null);
+      setFavorites((previous) => previous.filter((item) => item !== id));
+
+      if (selectedRecipe === id) {
+        setSelectedRecipe(null);
+      }
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert("Could not delete recipe. Please try again.");
+    }
+  };
+
+  const handleCreateRecipe = async () => {
+    if (!newRecipe.name.trim()) {
+      alert("Please enter a recipe name.");
+      return;
+    }
+
+    const recipeToAdd = {
+      name: newRecipe.name,
+      description: newRecipe.description,
+      category: newRecipe.category,
+      time: newRecipe.time || "30 min",
+      rating: "5.0",
+      image:
+        newRecipe.image ||
+        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
+      ingredients: newRecipe.ingredients
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+      instructions: newRecipe.instructions
+        .split("\n")
+        .map((item) => item.trim())
+        .filter(Boolean),
+      isDeleted: false,
+    };
+
+    try {
+      const savedRecipe = await createRecipe(recipeToAdd);
+
+      setRecipes((previous) => [savedRecipe, ...previous]);
+      setShowAddForm(false);
+
+      setNewRecipe({
+        name: "",
+        description: "",
+        category: "Healthy",
+        time: "",
+        image: "",
+        ingredients: "",
+        instructions: "",
+      });
+
+      alert("Recipe saved successfully!");
+    } catch (error) {
+      console.error("Create recipe error:", error);
+      alert("Failed to save recipe. Check your backend.");
     }
   };
 
@@ -349,7 +412,13 @@ function App() {
             ))}
           </div>
 
-          {filteredRecipes.length === 0 && (
+          {loadingRecipes && (
+            <div className="empty-state">
+              <p>Loading recipes...</p>
+            </div>
+          )}
+
+          {filteredRecipes.length === 0 && !loadingRecipes && (
             <div className="empty-state">
               <h3>No recipes found!</h3>
               <p>Try searching something else.</p>
@@ -499,47 +568,7 @@ function App() {
 
               <button
                 className="modal-favorite"
-                onClick={() => {
-                  if (!newRecipe.name.trim()) {
-                    alert("Please enter a recipe name.");
-                    return;
-                  }
-
-                  const recipeToAdd = {
-                    id: Date.now(),
-                    name: newRecipe.name,
-                    description: newRecipe.description,
-                    category: newRecipe.category,
-                    time: newRecipe.time || "30 min",
-                    rating: "5.0",
-                    image:
-                      newRecipe.image ||
-                      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
-                    ingredients: newRecipe.ingredients
-                      .split(",")
-                      .map((item) => item.trim())
-                      .filter(Boolean),
-                    instructions: newRecipe.instructions
-                      .split("\n")
-                      .map((item) => item.trim())
-                      .filter(Boolean),
-                    isDeleted: false,
-                  };
-
-                  console.log("New recipe captured:", recipeToAdd);
-                  setRecipes((previous) => [...previous, recipeToAdd]);
-                  setShowAddForm(false);
-
-                  setNewRecipe({
-                    name: "",
-                    description: "",
-                    category: "Healthy",
-                    time: "",
-                    image: "",
-                    ingredients: "",
-                    instructions: "",
-                  });
-                }}
+                onClick={handleCreateRecipe}
               >
                 Create Recipe
               </button>

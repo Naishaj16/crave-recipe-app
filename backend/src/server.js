@@ -48,6 +48,8 @@ app.get("/api/db-test", async (req, res) => {
 
 // Recipe Routes
 app.use("/api/recipes", recipeRoutes);
+const favoriteRoutes = require("./routes/favoriteRoutes");
+app.use("/api/favorites", favoriteRoutes);
 
 // Start server
 app.listen(PORT, () => {
