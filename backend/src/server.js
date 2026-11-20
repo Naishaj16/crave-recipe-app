@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const adminRoutes = require("./routes/adminRoutes");
 
 const pool = require("./config/db");
 const recipeRoutes = require("./routes/recipeRoutes");
@@ -8,6 +9,7 @@ const favoriteRoutes = require("./routes/favoriteRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+const authRoutes = require("./routes/authRoutes");
 
 // Middleware
 app.use(cors({
@@ -50,7 +52,8 @@ app.get("/api/db-test", async (req, res) => {
 // Routes
 app.use("/api/recipes", recipeRoutes);
 app.use("/api/favorites", favoriteRoutes);
-
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 // Start server
 app.listen(PORT, () => {
   console.log(`Crave server running on http://localhost:${PORT}`);
