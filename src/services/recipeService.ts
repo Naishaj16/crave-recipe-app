@@ -76,3 +76,37 @@ export const deleteRecipe = async (id: number) => {
     if (!response.ok) throw new Error("Failed to delete recipe");
     return response.json();
 };
+// GET favorites
+export const getFavorites = async (): Promise<number[]> => {
+    const response = await fetch(`${API_URL}/favorites`);
+
+    if (!response.ok) throw new Error("Failed to fetch favorites");
+
+    const data = await response.json();
+
+    return data.favorites.map((recipe: any) => recipe.id);
+};
+
+// ADD favorite
+export const addFavorite = async (recipeId: number) => {
+    const response = await fetch(`${API_URL}/favorites`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipe_id: recipeId }),
+    });
+
+    if (!response.ok) throw new Error("Failed to add favorite");
+
+    return response.json();
+};
+
+// REMOVE favorite
+export const removeFavorite = async (recipeId: number) => {
+    const response = await fetch(`${API_URL}/favorites/${recipeId}`, {
+        method: "DELETE",
+    });
+
+    if (!response.ok) throw new Error("Failed to remove favorite");
+
+    return response.json();
+};

@@ -625,3 +625,57 @@ footer>span {
   background: #c34b4b;
   color: white;
 }
+
+.recipe-filter-buttons {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0 16px;
+}
+
+.recipe-filter-buttons button {
+  padding: 10px 22px;
+  border-radius: 30px;
+  border: 1px solid #e6e5dc;
+  background: white;
+  color: #67685e;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.recipe-filter-buttons button:hover {
+  border-color: #78916b;
+}
+
+.recipe-filter-buttons button.active {
+  background: #526d48;
+  color: white;
+  border-color: #526d48;
+}
+
+.recipe-filter-buttons {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0 16px;
+}
+
+.recipe-filter-buttons button {
+  padding: 10px 22px;
+  border-radius: 30px;
+  border: 1px solid #e6e5dc;
+  background: white;
+  color: #67685e;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.recipe-filter-buttons button:hover {
+  border-color: #78916b;
+}
+
+.recipe-filter-buttons button.active {
+  background: #526d48;
+  color: white;
+  border-color: #526d48;
+}

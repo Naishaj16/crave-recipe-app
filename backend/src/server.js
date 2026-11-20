@@ -4,6 +4,7 @@ require("dotenv").config();
 
 const pool = require("./config/db");
 const recipeRoutes = require("./routes/recipeRoutes");
+const favoriteRoutes = require("./routes/favoriteRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -46,9 +47,8 @@ app.get("/api/db-test", async (req, res) => {
   }
 });
 
-// Recipe Routes
+// Routes
 app.use("/api/recipes", recipeRoutes);
-const favoriteRoutes = require("./routes/favoriteRoutes");
 app.use("/api/favorites", favoriteRoutes);
 
 // Start server

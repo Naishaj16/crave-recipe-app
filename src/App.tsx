@@ -5,8 +5,10 @@ import {
   getRecipes,
   createRecipe,
   deleteRecipe as deleteRecipeAPI,
+  getFavorites,
+  addFavorite,
+  removeFavorite,
 } from "./services/recipeService";
-
 
 const initialRecipes = [
   {
@@ -135,14 +137,25 @@ type Recipe = {
 function App() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
-  const [favorites, setFavorites] = useState<number[]>(() => {
-    const savedFavorites = localStorage.getItem("crave-favorites");
-    return savedFavorites ? JSON.parse(savedFavorites) : [];
+  const [favorites, setFavorites] = useState<number[]>([]);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(() => {
+    return localStorage.getItem("crave-view") === "favorites";
   });
-  const [selectedRecipe, setSelectedRecipe] = useState<number | null>(null);
   useEffect(() => {
-    localStorage.setItem("crave-favorites", JSON.stringify(favorites));
-  }, [favorites]);
+    localStorage.setItem(
+      "crave-view",
+      showFavoritesOnly ? "favorites" : "all"
+    );
+  }, [showFavoritesOnly]);
+  const [selectedRecipe, setSelectedRecipe] = useState<number | null>(null);
+
+  useEffect(() => {
+    getFavorites()
+      .then((data) => setFavorites(data))
+      .catch((error) => {
+        console.error("Failed to load favorites:", error);
+      });
+  }, []);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newRecipe, setNewRecipe] = useState({
     name: "",
@@ -182,15 +195,27 @@ function App() {
     const matchesCategory =
       category === "All" || recipe.category === category;
 
-    return matchesSearch && matchesCategory;
+    const matchesFavorites =
+      !showFavoritesOnly || favorites.includes(recipe.id);
+
+    return matchesSearch && matchesCategory && matchesFavorites;
   });
 
-  const toggleFavorite = (id: number) => {
-    setFavorites((previous) =>
-      previous.includes(id)
-        ? previous.filter((item) => item !== id)
-        : [...previous, id]
-    );
+  const toggleFavorite = async (id: number) => {
+    const isFavorite = favorites.includes(id);
+
+    try {
+      if (isFavorite) {
+        await removeFavorite(id);
+        setFavorites((previous) => previous.filter((item) => item !== id));
+      } else {
+        await addFavorite(id);
+        setFavorites((previous) => [...previous, id]);
+      }
+    } catch (error) {
+      console.error("Favorite update failed:", error);
+      alert("Could not update favorite. Please try again.");
+    }
   };
   const deleteRecipe = async (id: number) => {
     const confirmed = window.confirm("Move this recipe to Trash?");
@@ -198,6 +223,7 @@ function App() {
 
     try {
       await deleteRecipeAPI(id);
+      await removeFavorite(id);
 
       setRecipes((previous) =>
         previous.map((recipe) =>
@@ -277,9 +303,27 @@ function App() {
         </div>
 
         <div className="nav-links">
-          <a href="#home" className="active">Home</a>
-          <a href="#recipes">Explore</a>
-          <a href="#favorites">Favorites</a>
+          <a
+            href="#home"
+            className={!showFavoritesOnly ? "active" : ""}
+            onClick={() => setShowFavoritesOnly(false)}
+          >
+            Home
+          </a>
+          <a
+            href="#recipes"
+            className={!showFavoritesOnly ? "active" : ""}
+            onClick={() => setShowFavoritesOnly(false)}
+          >
+            Explore
+          </a>
+          <a
+            href="#recipes"
+            className={showFavoritesOnly ? "active" : ""}
+            onClick={() => setShowFavoritesOnly(true)}
+          >
+            Favorites
+          </a>
         </div>
 
         <div className="nav-right">
@@ -345,6 +389,22 @@ function App() {
               onClick={() => setShowAddForm(true)}
             >
               + Add Recipe
+            </button>
+          </div>
+
+          <div className="recipe-filter-buttons">
+            <button
+              className={!showFavoritesOnly ? "active" : ""}
+              onClick={() => setShowFavoritesOnly(false)}
+            >
+              All Recipes
+            </button>
+
+            <button
+              className={showFavoritesOnly ? "active" : ""}
+              onClick={() => setShowFavoritesOnly(true)}
+            >
+              ❤️ Favorites
             </button>
           </div>
 
