@@ -79,11 +79,10 @@ const login = async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.status(401).json({
-                message: "Invalid email or password",
+            return res.status(404).json({
+                message: "Account does not exist. Please sign up.",
             });
         }
-
         const user = result.rows[0];
 
         // Verify password

@@ -18,8 +18,14 @@ const getRecipes = async (req, res) => {
 const createRecipe = async (req, res) => {
   try {
     const {
-      name, description, category, time_minutes,
-      rating, image, ingredients, instructions,
+      name,
+      description,
+      category,
+      time_minutes,
+      image,
+      ingredients,
+      instructions,
+      video_url,
     } = req.body;
 
     if (!name || !category) {
@@ -31,12 +37,18 @@ const createRecipe = async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO recipes
-      (name, description, category, time_minutes, rating, image, ingredients, instructions)
+      (name, description, category, time_minutes, image, ingredients, instructions, video_url)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
       RETURNING *`,
       [
-        name, description || "", category, time_minutes || 0,
-        rating || 0, image || "", ingredients || [], instructions || [],
+        name,
+        description || "",
+        category,
+        time_minutes || 0,
+        image || "",
+        ingredients || [],
+        instructions || [],
+        video_url || null,
       ]
     );
 
@@ -56,8 +68,14 @@ const updateRecipe = async (req, res) => {
   try {
     const { id } = req.params;
     const {
-      name, description, category, time_minutes,
-      rating, image, ingredients, instructions,
+      name,
+      description,
+      category,
+      time_minutes,
+      image,
+      ingredients,
+      instructions,
+      video_url,
     } = req.body;
 
     const result = await pool.query(
@@ -66,16 +84,23 @@ const updateRecipe = async (req, res) => {
         description = $2,
         category = $3,
         time_minutes = $4,
-        rating = $5,
-        image = $6,
-        ingredients = $7,
-        instructions = $8,
+        image = $5,
+        ingredients = $6,
+        instructions = $7,
+        video_url = $8,
         updated_at = CURRENT_TIMESTAMP
        WHERE id = $9 AND is_deleted = false
        RETURNING *`,
       [
-        name, description || "", category, time_minutes || 0,
-        rating || 0, image || "", ingredients || [], instructions || [], id,
+        name,
+        description || "",
+        category,
+        time_minutes || 0,
+        image || "",
+        ingredients || [],
+        instructions || [],
+        video_url || null,
+        id,
       ]
     );
 

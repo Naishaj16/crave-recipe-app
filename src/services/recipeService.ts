@@ -6,10 +6,11 @@ export interface Recipe {
     description: string;
     category: string;
     time: string;
-    rating: string;
+    rating?: string;
     image: string;
     ingredients: string[];
     instructions: string[];
+    videoUrl?: string;
     isDeleted?: boolean;
 }
 
@@ -17,12 +18,21 @@ const formatRecipe = (recipe: any): Recipe => ({
     ...recipe,
     time: `${recipe.time_minutes || 0} min`,
     rating: String(recipe.rating ?? "0"),
+    videoUrl: recipe.video_url || recipe.videoUrl || "",
     isDeleted: recipe.is_deleted ?? false,
 });
 
 const timeToMinutes = (time: string) => {
     const match = time.match(/\d+/);
     return match ? Number(match[0]) : 0;
+};
+
+const getAuthHeaders = () => {
+    const token = localStorage.getItem("crave-token");
+    return {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
 };
 
 // GET recipes
@@ -38,10 +48,11 @@ export const getRecipes = async (): Promise<Recipe[]> => {
 export const createRecipe = async (recipe: Omit<Recipe, "id">) => {
     const response = await fetch(`${API_URL}/recipes`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
             ...recipe,
             time_minutes: timeToMinutes(recipe.time),
+            video_url: recipe.videoUrl || "",
             is_deleted: false,
         }),
     });
@@ -55,10 +66,11 @@ export const createRecipe = async (recipe: Omit<Recipe, "id">) => {
 export const updateRecipe = async (id: number, recipe: Omit<Recipe, "id">) => {
     const response = await fetch(`${API_URL}/recipes/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
             ...recipe,
             time_minutes: timeToMinutes(recipe.time),
+            video_url: recipe.videoUrl || "",
         }),
     });
 
@@ -71,6 +83,7 @@ export const updateRecipe = async (id: number, recipe: Omit<Recipe, "id">) => {
 export const deleteRecipe = async (id: number) => {
     const response = await fetch(`${API_URL}/recipes/${id}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
     });
 
     if (!response.ok) throw new Error("Failed to delete recipe");

@@ -9,132 +9,27 @@ import {
   addFavorite,
   removeFavorite,
 } from "./services/recipeService";
+import AuthModal from "./components/AuthModal";
+import { useAuth } from "./context/AuthContext";
 
-const initialRecipes = [
-  {
-    id: 1,
-    name: "Creamy Tuscan Pasta",
-    category: "Italian",
-    time: "25 min",
-    rating: "4.9",
-    image: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=800",
-    description: "Creamy pasta with spinach, parmesan and sun-dried tomatoes.",
-    ingredients: ["200g pasta", "1 cup cream", "1 cup spinach", "Parmesan cheese", "3 garlic cloves", "Sun-dried tomatoes", "Salt", "Pepper"],
-    instructions: [
-      "Boil the pasta in salted water until cooked.",
-      "Heat a pan and saute garlic with sun-dried tomatoes.",
-      "Add spinach and cook until wilted.",
-      "Pour in cream and add parmesan, salt and pepper.",
-      "Mix the cooked pasta into the sauce.",
-      "Serve warm with extra parmesan."
-    ],
-  },
-  {
-    id: 2,
-    name: "Avocado Toast",
-    category: "Breakfast",
-    time: "10 min",
-    rating: "4.8",
-    image: "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=800",
-    description: "Crispy toast topped with creamy avocado, herbs and fresh seasoning.",
-    ingredients: ["2 slices sourdough bread", "1 ripe avocado", "1 tsp lemon juice", "Chilli flakes", "Salt", "Black pepper", "Olive oil"],
-    instructions: [
-      "Toast the bread slices until golden and crispy.",
-      "Mash the avocado with lemon juice, salt and pepper.",
-      "Spread the avocado mixture generously over the toast.",
-      "Sprinkle chilli flakes and drizzle olive oil.",
-      "Serve fresh."
-    ],
-  },
-  {
-    id: 3,
-    name: "Classic Margherita Pizza",
-    category: "Italian",
-    time: "35 min",
-    rating: "4.9",
-    image: "https://images.unsplash.com/photo-1579751626657-72bc17010498?w=800",
-    description: "Classic pizza with tomato sauce, mozzarella and fresh basil.",
-    ingredients: ["1 pizza dough", "1/2 cup tomato sauce", "150g mozzarella", "Fresh basil leaves", "Olive oil", "Salt"],
-    instructions: [
-      "Preheat your oven to 220°C.",
-      "Roll the pizza dough into a round shape.",
-      "Spread tomato sauce evenly over the dough.",
-      "Add mozzarella cheese and basil leaves.",
-      "Bake for 12–15 minutes until the crust is golden.",
-      "Drizzle olive oil and serve."
-    ],
-  },
-  {
-    id: 4,
-    name: "Berry Pancakes",
-    category: "Dessert",
-    time: "20 min",
-    rating: "4.7",
-    image: "https://images.unsplash.com/photo-1528207776546-365bb710ee93?w=800",
-    description: "Fluffy pancakes topped with fresh berries and maple syrup.",
-    ingredients: ["1 cup flour", "1 tbsp sugar", "1 tsp baking powder", "1 egg", "3/4 cup milk", "Fresh strawberries", "Blueberries", "Maple syrup"],
-    instructions: [
-      "Mix flour, sugar and baking powder in a bowl.",
-      "Whisk egg and milk in a separate bowl.",
-      "Combine the wet and dry ingredients.",
-      "Heat a pan and pour a small amount of batter.",
-      "Flip when bubbles appear and cook the other side.",
-      "Serve with berries and maple syrup."
-    ],
-  },
-  {
-    id: 5,
-    name: "Fresh Buddha Bowl",
-    category: "Healthy",
-    time: "20 min",
-    rating: "4.8",
-    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800",
-    description: "A colourful bowl of fresh vegetables, grains and wholesome ingredients.",
-    ingredients: ["1 cup cooked quinoa", "1/2 avocado", "1 cup chickpeas", "Cucumber", "Cherry tomatoes", "Carrots", "Lettuce", "Olive oil", "Lemon juice"],
-    instructions: [
-      "Cook quinoa according to package instructions.",
-      "Wash and chop all vegetables.",
-      "Prepare chickpeas and season with salt and pepper.",
-      "Arrange quinoa, vegetables and chickpeas in a bowl.",
-      "Add sliced avocado.",
-      "Drizzle olive oil and lemon juice before serving."
-    ],
-  },
-  {
-    id: 6,
-    name: "Chocolate Brownie",
-    category: "Dessert",
-    time: "40 min",
-    rating: "4.9",
-    image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=800",
-    description: "Rich, fudgy chocolate brownies with a soft centre.",
-    ingredients: ["100g dark chocolate", "100g butter", "3/4 cup sugar", "2 eggs", "1/2 cup flour", "2 tbsp cocoa powder", "1 tsp vanilla extract"],
-    instructions: [
-      "Preheat the oven to 180°C.",
-      "Melt dark chocolate and butter together.",
-      "Whisk sugar, eggs and vanilla.",
-      "Mix the melted chocolate into the egg mixture.",
-      "Fold in flour and cocoa powder.",
-      "Pour into a lined baking pan.",
-      "Bake for 20–25 minutes and allow to cool before slicing."
-    ],
-  },
-];
-
+const initialRecipes: Recipe[] = [];
 type Recipe = {
   id: number;
   name: string;
   category: string;
   time: string;
-  rating: string;
+  rating?: string;
   image: string;
   description: string;
   ingredients: string[];
   instructions: string[];
+  videoUrl?: string;
   isDeleted?: boolean;
 };
 
 function App() {
+  const { user, logout } = useAuth();
+  const [showAuth, setShowAuth] = useState(false);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [favorites, setFavorites] = useState<number[]>([]);
@@ -165,6 +60,7 @@ function App() {
     image: "",
     ingredients: "",
     instructions: "",
+    videoUrl: "",
   });
   const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
   const [loadingRecipes, setLoadingRecipes] = useState(true);
@@ -172,9 +68,8 @@ function App() {
   useEffect(() => {
     getRecipes()
       .then((data) => {
-        if (data && data.length > 0) {
-          setRecipes(data);
-        }
+        setRecipes(data || []);
+
       })
       .catch((error) => {
         console.error("Failed to load recipes:", error);
@@ -253,10 +148,7 @@ function App() {
       description: newRecipe.description,
       category: newRecipe.category,
       time: newRecipe.time || "30 min",
-      rating: "5.0",
-      image:
-        newRecipe.image ||
-        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
+      image: newRecipe.image || "",
       ingredients: newRecipe.ingredients
         .split(",")
         .map((item) => item.trim())
@@ -265,6 +157,7 @@ function App() {
         .split("\n")
         .map((item) => item.trim())
         .filter(Boolean),
+      videoUrl: newRecipe.videoUrl || "",
       isDeleted: false,
     };
 
@@ -282,6 +175,7 @@ function App() {
         image: "",
         ingredients: "",
         instructions: "",
+        videoUrl: "",
       });
 
       alert("Recipe saved successfully!");
@@ -327,8 +221,26 @@ function App() {
         </div>
 
         <div className="nav-right">
-          <span className="user-avatar">N</span>
-          <span className="user-name">My Kitchen</span>
+          {user ? (
+            <>
+              <span className="user-avatar">
+                {user.name.charAt(0).toUpperCase()}
+              </span>
+
+              <span className="user-name">{user.name}</span>
+
+              <button className="auth-nav-btn" onClick={logout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <button
+              className="auth-nav-btn"
+              onClick={() => setShowAuth(true)}
+            >
+              Login / Sign Up
+            </button>
+          )}
         </div>
       </nav>
 
@@ -455,7 +367,7 @@ function App() {
                 <div className="recipe-info">
                   <div className="recipe-meta">
                     <span>{recipe.category}</span>
-                    <span>★ {recipe.rating}</span>
+                    <span>{recipe.rating && Number(recipe.rating) > 0 ? `★ ${recipe.rating}` : "★ —"}</span>
                   </div>
 
                   <h3>{recipe.name}</h3>
@@ -521,7 +433,7 @@ function App() {
               <p>{activeRecipe.description}</p>
               <div className="modal-meta">
                 <span>⏱ {activeRecipe.time}</span>
-                <span>★ {activeRecipe.rating}</span>
+                <span>{activeRecipe.rating && Number(activeRecipe.rating) > 0 ? `★ ${activeRecipe.rating}` : "★ —"}</span>
               </div>
               <h3>Ingredients</h3>
               <ul>
@@ -536,6 +448,32 @@ function App() {
                   <li key={index}>{step}</li>
                 ))}
               </ol>
+
+              {activeRecipe.videoUrl && (
+                <div className="modal-video-section">
+                  <h3>Video Tutorial</h3>
+                  {activeRecipe.videoUrl.includes("youtube.com") || activeRecipe.videoUrl.includes("youtu.be") ? (
+                    <iframe
+                      className="recipe-video-frame"
+                      src={
+                        activeRecipe.videoUrl.includes("watch?v=")
+                          ? activeRecipe.videoUrl.replace("watch?v=", "embed/").split("&")[0]
+                          : activeRecipe.videoUrl.replace("youtu.be/", "www.youtube.com/embed/").split("?")[0]
+                      }
+                      title="Recipe Video Tutorial"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      className="recipe-video-player"
+                      src={activeRecipe.videoUrl}
+                      controls
+                    />
+                  )}
+                </div>
+              )}
+
               <button
                 className="modal-favorite"
                 onClick={() => toggleFavorite(activeRecipe.id)}
@@ -610,6 +548,14 @@ function App() {
                 }
               />
 
+              <input
+                placeholder="Video URL (optional, YouTube or MP4)"
+                value={newRecipe.videoUrl}
+                onChange={(e) =>
+                  setNewRecipe({ ...newRecipe, videoUrl: e.target.value })
+                }
+              />
+
               <textarea
                 placeholder="Ingredients (separate each with a comma)"
                 value={newRecipe.ingredients}
@@ -642,6 +588,8 @@ function App() {
         <p>Made for the love of food.</p>
         <span>© 2026 Crave Recipe Studio</span>
       </footer>
+
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
     </div>
   );
 }
