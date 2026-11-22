@@ -10,6 +10,7 @@ import {
   removeFavorite,
 } from "./services/recipeService";
 import AuthModal from "./components/AuthModal";
+import AdminPortal from "./components/AdminPortal";
 import { useAuth } from "./context/AuthContext";
 
 const initialRecipes: Recipe[] = [];
@@ -29,7 +30,30 @@ type Recipe = {
 
 function App() {
   const { user, logout } = useAuth();
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [showAuth, setShowAuth] = useState(false);
+
+  useEffect(() => {
+    const onPop = () => setCurrentPath(window.location.pathname);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  const navigate = (path: string) => {
+    window.history.pushState(null, "", path);
+    setCurrentPath(path);
+  };
+
+  useEffect(() => {
+    const handleHash = () => {
+      if (window.location.hash === "#admin" && user?.role === "admin") {
+        navigate("/admin/dashboard");
+      }
+    };
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, [user]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [favorites, setFavorites] = useState<number[]>([]);
@@ -189,6 +213,17 @@ function App() {
     (recipe) => recipe.id === selectedRecipe
   );
 
+  if (currentPath.startsWith("/admin")) {
+    return (
+      <AdminPortal
+        onBackToApp={() => navigate("/")}
+        onRecipeUpdated={() => {
+          getRecipes().then((data) => setRecipes(data || []));
+        }}
+      />
+    );
+  }
+
   return (
     <div className="app">
       <nav className="navbar">
@@ -272,9 +307,9 @@ function App() {
             </div>
 
             <div className="hero-tags">
-              <span>✨ Easy recipes</span>
-              <span>🥗 Fresh ingredients</span>
-              <span>⏱ Quick meals</span>
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
           </div>
 

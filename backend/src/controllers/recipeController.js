@@ -35,10 +35,12 @@ const createRecipe = async (req, res) => {
       });
     }
 
+    const userId = req.user?.id || null;
+
     const result = await pool.query(
       `INSERT INTO recipes
-      (name, description, category, time_minutes, image, ingredients, instructions, video_url)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      (name, description, category, time_minutes, image, ingredients, instructions, video_url, user_id)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
       RETURNING *`,
       [
         name,
@@ -49,6 +51,7 @@ const createRecipe = async (req, res) => {
         ingredients || [],
         instructions || [],
         video_url || null,
+        userId,
       ]
     );
 
