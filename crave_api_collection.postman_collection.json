@@ -1,0 +1,530 @@
+{
+  "info": {
+    "_postman_id": "crave-recipe-api-collection-2026",
+    "name": "Crave Recipe App API",
+    "description": "Comprehensive API collection for Crave Recipe Studio: Authentication, Recipe CRUD, Favorites, and Administrator Control Panel.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5001/api",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recipe_id",
+      "value": "10",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "2",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. System & Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Returns status 200 and confirms the Express server is live."
+          }
+        },
+        {
+          "name": "Database Connection Test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/db-test",
+              "host": ["{{base_url}}"],
+              "path": ["db-test"]
+            },
+            "description": "Tests connectivity directly with the PostgreSQL database."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication",
+      "item": [
+        {
+          "name": "User Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "signup"]
+            },
+            "description": "Registers a new standard user account (role: user, status: active)."
+          }
+        },
+        {
+          "name": "Admin Login (Auto-saves admin_token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('admin_token', jsonData.token);",
+                  "    console.log('Admin token saved to collection variables.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo@crave.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticates the demo administrator account and sets {{admin_token}} automatically."
+          }
+        },
+        {
+          "name": "Standard User Login (Auto-saves user_token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('user_token', jsonData.token);",
+                  "    console.log('User token saved to collection variables.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@test.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticates a standard user account and sets {{user_token}} automatically."
+          }
+        },
+        {
+          "name": "User Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Records logout timestamp in database activity logs."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Recipes",
+      "item": [
+        {
+          "name": "Get All Active Recipes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes",
+              "host": ["{{base_url}}"],
+              "path": ["recipes"]
+            },
+            "description": "Public endpoint: fetches all published recipes that are not soft-deleted."
+          }
+        },
+        {
+          "name": "Create Recipe (Authenticated)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Creamy Tuscan Garlic Chicken\",\n  \"description\": \"Tender chicken breast in a rich garlic, sun-dried tomato and spinach cream sauce.\",\n  \"category\": \"Italian\",\n  \"time_minutes\": 30,\n  \"image\": \"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800\",\n  \"ingredients\": [\"Chicken breasts\", \"Garlic\", \"Sun-dried tomatoes\", \"Heavy cream\", \"Spinach\", \"Parmesan\"],\n  \"instructions\": [\"Season and sear chicken until golden\", \"Saute garlic and sun-dried tomatoes\", \"Add cream and parmesan\", \"Stir in spinach and return chicken\"],\n  \"video_url\": \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/recipes",
+              "host": ["{{base_url}}"],
+              "path": ["recipes"]
+            },
+            "description": "Creates a new recipe and assigns user_id from the authenticated user."
+          }
+        },
+        {
+          "name": "Update Recipe",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Creamy Tuscan Garlic Chicken (Updated)\",\n  \"description\": \"Updated rich garlic cream sauce.\",\n  \"category\": \"Italian\",\n  \"time_minutes\": 35,\n  \"image\": \"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800\",\n  \"ingredients\": [\"Chicken\", \"Garlic\", \"Spinach\"],\n  \"instructions\": [\"Cook thoroughly\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/recipes/{{recipe_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["recipes", "{{recipe_id}}"]
+            },
+            "description": "Updates an existing recipe by ID."
+          }
+        },
+        {
+          "name": "Soft-Delete Recipe (Move to Trash)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/recipes/{{recipe_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["recipes", "{{recipe_id}}"]
+            },
+            "description": "Soft-deletes a recipe (sets is_deleted = true) so it disappears from public feed."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Favorites",
+      "item": [
+        {
+          "name": "Get User Favorites",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/favorites",
+              "host": ["{{base_url}}"],
+              "path": ["favorites"]
+            },
+            "description": "Returns list of favorited recipes."
+          }
+        },
+        {
+          "name": "Add Favorite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipe_id\": 10\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/favorites",
+              "host": ["{{base_url}}"],
+              "path": ["favorites"]
+            },
+            "description": "Adds a recipe to user favorites."
+          }
+        },
+        {
+          "name": "Remove Favorite",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/favorites/10",
+              "host": ["{{base_url}}"],
+              "path": ["favorites", "10"]
+            },
+            "description": "Removes a recipe from favorites by recipe ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Admin Console (Strictly Protected)",
+      "item": [
+        {
+          "name": "Get Admin Overview Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/stats",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "stats"]
+            },
+            "description": "Returns counts: total users, active accounts, active recipes, trashed recipes, login events, and recent activity."
+          }
+        },
+        {
+          "name": "Get User Directory",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"]
+            },
+            "description": "Returns all registered users with role, status, registration date, and last login."
+          }
+        },
+        {
+          "name": "Update User Role (Promote / Demote)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/role",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "role"]
+            },
+            "description": "Changes user role to 'admin' or 'user'."
+          }
+        },
+        {
+          "name": "Update User Status (Activate / Deactivate)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"disabled\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}", "status"]
+            },
+            "description": "Enables or disables an account. Disabled accounts cannot log in."
+          }
+        },
+        {
+          "name": "Delete User Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{user_id}}"]
+            },
+            "description": "Permanently deletes a user account from PostgreSQL."
+          }
+        },
+        {
+          "name": "Get Activity & Session Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/activity",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "activity"]
+            },
+            "description": "Fetches audit trail of signups, logins, logouts, failed login attempts, and administrator actions."
+          }
+        },
+        {
+          "name": "Get All Admin Recipes (Including Trash)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/recipes",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "recipes"]
+            },
+            "description": "Fetches both published and soft-deleted recipes joined with creator names and emails."
+          }
+        },
+        {
+          "name": "Soft-Delete Recipe (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/recipes/{{recipe_id}}/soft-delete",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "recipes", "{{recipe_id}}", "soft-delete"]
+            },
+            "description": "Admin action: Moves a recipe to trash and records an audit log entry."
+          }
+        },
+        {
+          "name": "Restore Recipe from Trash",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/recipes/{{recipe_id}}/restore",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "recipes", "{{recipe_id}}", "restore"]
+            },
+            "description": "Admin action: Restores a soft-deleted recipe back to the active recipe feed."
+          }
+        },
+        {
+          "name": "Permanently Purge Recipe",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/recipes/{{recipe_id}}/permanent",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "recipes", "{{recipe_id}}", "permanent"]
+            },
+            "description": "Admin action: Completely removes a recipe and its favorites from PostgreSQL."
+          }
+        }
+      ]
+    }
+  ]
+}
+

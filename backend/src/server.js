@@ -1,21 +1,27 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
-const adminRoutes = require("./routes/adminRoutes");
 
+const adminRoutes = require("./routes/adminRoutes");
 const pool = require("./config/db");
 const recipeRoutes = require("./routes/recipeRoutes");
 const favoriteRoutes = require("./routes/favoriteRoutes");
+const authRoutes = require("./routes/authRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
-const authRoutes = require("./routes/authRoutes");
 
 // Middleware
 app.use(cors({
   origin: "http://localhost:5173"
 }));
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+// Serve uploaded static media files
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Test routes
 app.get("/", (req, res) => {
@@ -54,6 +60,8 @@ app.use("/api/recipes", recipeRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/upload", uploadRoutes);
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Crave server running on http://localhost:${PORT}`);

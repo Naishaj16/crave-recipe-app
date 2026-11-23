@@ -9,24 +9,16 @@ import {
   addFavorite,
   removeFavorite,
 } from "./services/recipeService";
+import type { Recipe } from "./services/recipeService";
 import AuthModal from "./components/AuthModal";
 import AdminPortal from "./components/AdminPortal";
+import RecipeEditModal from "./components/RecipeEditModal";
+import VideoPlayer from "./components/VideoPlayer";
+import { uploadMediaFile } from "./utils/mediaUtils";
 import { useAuth } from "./context/AuthContext";
 
+const DEFAULT_RECIPE_IMAGE = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800";
 const initialRecipes: Recipe[] = [];
-type Recipe = {
-  id: number;
-  name: string;
-  category: string;
-  time: string;
-  rating?: string;
-  image: string;
-  description: string;
-  ingredients: string[];
-  instructions: string[];
-  videoUrl?: string;
-  isDeleted?: boolean;
-};
 
 function App() {
   const { user, logout } = useAuth();
@@ -76,6 +68,9 @@ function App() {
       });
   }, []);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  const [addImageStatus, setAddImageStatus] = useState("");
+  const [addVideoStatus, setAddVideoStatus] = useState("");
   const [newRecipe, setNewRecipe] = useState({
     name: "",
     description: "",
@@ -86,6 +81,36 @@ function App() {
     instructions: "",
     videoUrl: "",
   });
+
+  const handleAddPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setAddImageStatus("Compressing photo...");
+      const url = await uploadMediaFile(file, (msg) => setAddImageStatus(msg));
+      setNewRecipe((prev) => ({ ...prev, image: url }));
+      setAddImageStatus("Photo uploaded successfully!");
+      setTimeout(() => setAddImageStatus(""), 3000);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to upload photo");
+      setAddImageStatus("");
+    }
+  };
+
+  const handleAddVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setAddVideoStatus("Uploading video from gallery...");
+      const url = await uploadMediaFile(file, (msg) => setAddVideoStatus(msg));
+      setNewRecipe((prev) => ({ ...prev, videoUrl: url }));
+      setAddVideoStatus("Video uploaded successfully!");
+      setTimeout(() => setAddVideoStatus(""), 3000);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to upload video");
+      setAddVideoStatus("");
+    }
+  };
   const [recipes, setRecipes] = useState<Recipe[]>(initialRecipes);
   const [loadingRecipes, setLoadingRecipes] = useState(true);
 
@@ -102,7 +127,15 @@ function App() {
       .finally(() => setLoadingRecipes(false));
   }, []);
 
-  const categories = ["All", "Italian", "Breakfast", "Healthy", "Dessert"];
+  const categories = [
+    "All",
+    "Italian",
+    "Healthy",
+    "Breakfast",
+    "Dessert",
+    "Main Course",
+    "Quick Meals",
+  ];
 
   const filteredRecipes = recipes.filter((recipe) => {
     if (recipe.isDeleted) return false;
@@ -121,6 +154,12 @@ function App() {
   });
 
   const toggleFavorite = async (id: number) => {
+    if (!user) {
+      alert("Please sign in to save your favorite recipes.");
+      setShowAuth(true);
+      return;
+    }
+
     const isFavorite = favorites.includes(id);
 
     try {
@@ -137,6 +176,12 @@ function App() {
     }
   };
   const deleteRecipe = async (id: number) => {
+    if (!user) {
+      alert("Please sign in to manage recipes.");
+      setShowAuth(true);
+      return;
+    }
+
     const confirmed = window.confirm("Move this recipe to Trash?");
     if (!confirmed) return;
 
@@ -162,6 +207,12 @@ function App() {
   };
 
   const handleCreateRecipe = async () => {
+    if (!user) {
+      alert("Please sign in to your kitchen account to create a recipe.");
+      setShowAuth(true);
+      return;
+    }
+
     if (!newRecipe.name.trim()) {
       alert("Please enter a recipe name.");
       return;
@@ -203,9 +254,18 @@ function App() {
       });
 
       alert("Recipe saved successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Create recipe error:", error);
-      alert("Failed to save recipe. Check your backend.");
+      if (
+        error?.message?.toLowerCase().includes("token") ||
+        error?.message?.toLowerCase().includes("logged in") ||
+        error?.message?.includes("401")
+      ) {
+        alert("Please sign in to save your recipe.");
+        setShowAuth(true);
+      } else {
+        alert(error?.message || "Failed to save recipe. Please check your connection.");
+      }
     }
   };
 
@@ -307,9 +367,9 @@ function App() {
             </div>
 
             <div className="hero-tags">
-              <span></span>
-              <span></span>
-              <span></span>
+              <span>Fresh ingredients</span>
+              <span>Easy recipes</span>
+              <span>Quick meals</span>
             </div>
           </div>
 
@@ -333,7 +393,14 @@ function App() {
             </div>
             <button
               className="add-recipe-btn"
-              onClick={() => setShowAddForm(true)}
+              onClick={() => {
+                if (!user) {
+                  alert("Please sign in to your kitchen account to add recipes.");
+                  setShowAuth(true);
+                  return;
+                }
+                setShowAddForm(true);
+              }}
             >
               + Add Recipe
             </button>
@@ -372,7 +439,16 @@ function App() {
             {filteredRecipes.map((recipe) => (
               <article className="recipe-card" key={recipe.id}>
                 <div className="recipe-image">
-                  <img src={recipe.image} alt={recipe.name} />
+                  <img
+                    src={recipe.image?.trim() ? recipe.image : DEFAULT_RECIPE_IMAGE}
+                    alt={recipe.name}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      if (target.src !== DEFAULT_RECIPE_IMAGE) {
+                        target.src = DEFAULT_RECIPE_IMAGE;
+                      }
+                    }}
+                  />
                   <button
                     className="delete-recipe-btn"
                     onClick={(e) => {
@@ -408,12 +484,29 @@ function App() {
                   <h3>{recipe.name}</h3>
                   <p>{recipe.description}</p>
 
-                  <button
-                    className="view-recipe"
-                    onClick={() => setSelectedRecipe(recipe.id)}
-                  >
-                    View recipe <span>↗</span>
-                  </button>
+                  <div className="card-actions-row">
+                    <button
+                      className="view-recipe"
+                      onClick={() => setSelectedRecipe(recipe.id)}
+                    >
+                      View recipe <span>↗</span>
+                    </button>
+                    <button
+                      className="card-edit-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!user) {
+                          alert("Please sign in to edit recipes.");
+                          setShowAuth(true);
+                          return;
+                        }
+                        setEditingRecipe(recipe);
+                      }}
+                      title="Edit this recipe"
+                    >
+                      ✎ Edit
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}
@@ -460,7 +553,16 @@ function App() {
               ×
             </button>
 
-            <img src={activeRecipe.image} alt={activeRecipe.name} />
+            <img
+              src={activeRecipe.image?.trim() ? activeRecipe.image : DEFAULT_RECIPE_IMAGE}
+              alt={activeRecipe.name}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src !== DEFAULT_RECIPE_IMAGE) {
+                  target.src = DEFAULT_RECIPE_IMAGE;
+                }
+              }}
+            />
 
             <div className="modal-content">
               <span className="eyebrow">{activeRecipe.category}</span>
@@ -487,36 +589,34 @@ function App() {
               {activeRecipe.videoUrl && (
                 <div className="modal-video-section">
                   <h3>Video Tutorial</h3>
-                  {activeRecipe.videoUrl.includes("youtube.com") || activeRecipe.videoUrl.includes("youtu.be") ? (
-                    <iframe
-                      className="recipe-video-frame"
-                      src={
-                        activeRecipe.videoUrl.includes("watch?v=")
-                          ? activeRecipe.videoUrl.replace("watch?v=", "embed/").split("&")[0]
-                          : activeRecipe.videoUrl.replace("youtu.be/", "www.youtube.com/embed/").split("?")[0]
-                      }
-                      title="Recipe Video Tutorial"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <video
-                      className="recipe-video-player"
-                      src={activeRecipe.videoUrl}
-                      controls
-                    />
-                  )}
+                  <VideoPlayer url={activeRecipe.videoUrl} title={activeRecipe.name} />
                 </div>
               )}
 
-              <button
-                className="modal-favorite"
-                onClick={() => toggleFavorite(activeRecipe.id)}
-              >
-                {favorites.includes(activeRecipe.id)
-                  ? "♥ Remove from favorites"
-                  : "♡ Add to favorites"}
-              </button>
+              <div className="modal-actions-container">
+                <button
+                  className="modal-favorite"
+                  onClick={() => toggleFavorite(activeRecipe.id)}
+                >
+                  {favorites.includes(activeRecipe.id)
+                    ? "♥ Remove from favorites"
+                    : "♡ Add to favorites"}
+                </button>
+
+                <button
+                  className="modal-edit-action"
+                  onClick={() => {
+                    if (!user) {
+                      alert("Please sign in to edit recipes.");
+                      setShowAuth(true);
+                      return;
+                    }
+                    setEditingRecipe(activeRecipe);
+                  }}
+                >
+                  ✎ Edit Recipe
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -555,44 +655,134 @@ function App() {
                 }
               />
 
-              <select
-                value={newRecipe.category}
-                onChange={(e) =>
-                  setNewRecipe({ ...newRecipe, category: e.target.value })
-                }
-              >
-                <option>Healthy</option>
-                <option>Italian</option>
-                <option>Breakfast</option>
-                <option>Dessert</option>
-              </select>
+              <div className="add-row">
+                <select
+                  value={newRecipe.category}
+                  onChange={(e) =>
+                    setNewRecipe({ ...newRecipe, category: e.target.value })
+                  }
+                >
+                  <option>Healthy</option>
+                  <option>Italian</option>
+                  <option>Breakfast</option>
+                  <option>Dessert</option>
+                  <option>Main Course</option>
+                  <option>Quick Meals</option>
+                </select>
 
-              <input
-                placeholder="Cooking time (e.g. 30 min)"
-                value={newRecipe.time}
-                onChange={(e) =>
-                  setNewRecipe({ ...newRecipe, time: e.target.value })
-                }
-              />
+                <input
+                  placeholder="Cooking time (e.g. 30 min)"
+                  value={newRecipe.time}
+                  onChange={(e) =>
+                    setNewRecipe({ ...newRecipe, time: e.target.value })
+                  }
+                />
+              </div>
 
-              <input
-                placeholder="Image URL"
-                value={newRecipe.image}
-                onChange={(e) =>
-                  setNewRecipe({ ...newRecipe, image: e.target.value })
-                }
-              />
+              {/* Photo Upload & URL */}
+              <div className="add-media-block">
+                <div className="media-section-header">
+                  <label>Recipe Photo</label>
+                  {addImageStatus && (
+                    <span className="upload-status-hint">{addImageStatus}</span>
+                  )}
+                </div>
+                <div className="media-input-dual">
+                  <div className="file-upload-box">
+                    <label htmlFor="add-photo-file" className="file-upload-button">
+                      📁 Choose Photo from Gallery
+                    </label>
+                    <input
+                      id="add-photo-file"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAddPhotoUpload}
+                      style={{ display: "none" }}
+                    />
+                    <span className="upload-subtext">Auto-compressed</span>
+                  </div>
+                  <div className="url-input-box">
+                    <span className="url-label">or paste URL:</span>
+                    <input
+                      placeholder="Image URL"
+                      value={newRecipe.image}
+                      onChange={(e) =>
+                        setNewRecipe({ ...newRecipe, image: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                {newRecipe.image && (
+                  <div className="media-preview-bar">
+                    <img
+                      src={newRecipe.image}
+                      alt="Preview"
+                      className="media-mini-thumb"
+                    />
+                    <span className="media-preview-text">Photo attached</span>
+                    <button
+                      type="button"
+                      className="media-clear-btn"
+                      onClick={() => setNewRecipe({ ...newRecipe, image: "" })}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
 
-              <input
-                placeholder="Video URL (optional, YouTube or MP4)"
-                value={newRecipe.videoUrl}
-                onChange={(e) =>
-                  setNewRecipe({ ...newRecipe, videoUrl: e.target.value })
-                }
-              />
+              {/* Video Upload & URL */}
+              <div className="add-media-block">
+                <div className="media-section-header">
+                  <label>Video Tutorial</label>
+                  {addVideoStatus && (
+                    <span className="upload-status-hint">{addVideoStatus}</span>
+                  )}
+                </div>
+                <div className="media-input-dual">
+                  <div className="file-upload-box">
+                    <label htmlFor="add-video-file" className="file-upload-button">
+                      📁 Upload Video from Gallery
+                    </label>
+                    <input
+                      id="add-video-file"
+                      type="file"
+                      accept="video/mp4,video/quicktime,video/webm,video/x-m4v"
+                      onChange={handleAddVideoUpload}
+                      style={{ display: "none" }}
+                    />
+                    <span className="upload-subtext">MP4, MOV, WebM</span>
+                  </div>
+                  <div className="url-input-box">
+                    <span className="url-label">or paste link:</span>
+                    <input
+                      placeholder="YouTube, Shorts, Instagram Reel, TikTok, MP4"
+                      value={newRecipe.videoUrl}
+                      onChange={(e) =>
+                        setNewRecipe({ ...newRecipe, videoUrl: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+                {newRecipe.videoUrl && (
+                  <div className="video-preview-wrapper">
+                    <div className="video-preview-header">
+                      <span>Live Video Preview</span>
+                      <button
+                        type="button"
+                        className="media-clear-btn"
+                        onClick={() => setNewRecipe({ ...newRecipe, videoUrl: "" })}
+                      >
+                        Remove Video
+                      </button>
+                    </div>
+                    <VideoPlayer url={newRecipe.videoUrl} title={newRecipe.name} />
+                  </div>
+                )}
+              </div>
 
               <textarea
-                placeholder="Ingredients (separate each with a comma)"
+                placeholder="Ingredients (separate each with a comma or new line)"
                 value={newRecipe.ingredients}
                 onChange={(e) =>
                   setNewRecipe({ ...newRecipe, ingredients: e.target.value })
@@ -616,6 +806,19 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {editingRecipe && (
+        <RecipeEditModal
+          recipe={editingRecipe}
+          onClose={() => setEditingRecipe(null)}
+          onSave={(updated) => {
+            setRecipes((prev) =>
+              prev.map((r) => (r.id === updated.id ? updated : r))
+            );
+            setSelectedRecipe(updated.id);
+          }}
+        />
       )}
 
       <footer>
