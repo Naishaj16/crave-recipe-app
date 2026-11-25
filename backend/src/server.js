@@ -9,6 +9,8 @@ const recipeRoutes = require("./routes/recipeRoutes");
 const favoriteRoutes = require("./routes/favoriteRoutes");
 const authRoutes = require("./routes/authRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+const plannerRoutes = require("./routes/plannerRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -67,6 +69,8 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api", plannerRoutes);
+app.use("/api", profileRoutes);
 
 // Global JSON error handling middleware (handles Multer errors, file validation, etc.)
 app.use((err, req, res, next) => {

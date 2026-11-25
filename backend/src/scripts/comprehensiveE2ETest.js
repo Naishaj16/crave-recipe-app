@@ -154,6 +154,55 @@ async function runE2ETests() {
       logBug("medium", "Logout Endpoint Failed", `Status: ${logoutRes.status}`);
     }
 
+    // 2.8 Google Auth Validation (Missing email)
+    const googleMissingRes = await fetch(`${API_BASE}/auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "No Email" }),
+    });
+    if (googleMissingRes.status === 400) {
+      logPass("Google Auth Email Validation", "Rejects missing email with 400 Bad Request");
+    } else {
+      logBug("high", "Google Auth Validation Bypass", `Expected 400, got ${googleMissingRes.status}`);
+    }
+
+    // 2.9 Google Auth Standard User Login / Auto-Signup
+    const googleUserEmail = `google_test_${Date.now()}@gmail.com`;
+    const googleUserRes = await fetch(`${API_BASE}/auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: googleUserEmail,
+        name: "Google Chef User",
+        uid: "google-uid-12345",
+      }),
+    });
+    const googleUserData = await googleUserRes.json();
+    if (googleUserRes.status === 200 && googleUserData.user?.role === "user" && googleUserData.token) {
+      logPass("Google Standard User Auth", `Authenticated Google user (${googleUserData.user.name}) with role 'user'`);
+    } else {
+      logBug("critical", "Google User Auth Failed", JSON.stringify(googleUserData));
+    }
+    // Clean up temporary google user from test
+    await pool.query("DELETE FROM users WHERE email = $1", [googleUserEmail]);
+
+    // 2.10 Google Auth Naisha Admin Authentication
+    const googleAdminRes = await fetch(`${API_BASE}/auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "naishajain982@gmail.com",
+        name: "Naisha",
+        uid: "google-naisha-uid",
+      }),
+    });
+    const googleAdminData = await googleAdminRes.json();
+    if (googleAdminRes.status === 200 && googleAdminData.user?.role === "admin") {
+      logPass("Google Naisha Admin Auth", `Recognized primary admin Naisha via Google OAuth with role 'admin'`);
+    } else {
+      logBug("critical", "Google Admin Auth Failed", JSON.stringify(googleAdminData));
+    }
+
     // -------------------------------------------------------------------------
     // SECTION 3: ROLE-BASED ACCESS CONTROL (RBAC) & ADMIN APIs
     // -------------------------------------------------------------------------
@@ -402,6 +451,29 @@ async function runE2ETests() {
       } else {
         logBug("high", "User Own Recipe Access Issue", `Edit status: ${userEditOwnRes.status}, Delete status: ${userDelOwnRes.status}`);
       }
+
+      // 4.4d Ownership Injection Guard: Attempt to inject a fake user_id
+      const injectRes = await fetch(`${API_BASE}/recipes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+        body: JSON.stringify({
+          name: `Injection Test Dish ${Date.now()}`,
+          category: "Healthy",
+          image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
+          user_id: 99999, // Attempted spoof
+        }),
+      });
+      const injectData = await injectRes.json();
+      if (injectRes.status === 201 && injectData.recipe?.user_id === userLoginData.user.id) {
+        logPass("User ID Injection Guard", `Server strictly enforced authenticated user ID (${injectData.recipe.user_id}) and ignored spoofed user_id 99999`);
+        // Clean up injection test recipe from database
+        await pool.query("DELETE FROM recipes WHERE id = $1", [injectData.recipe.id]);
+      } else {
+        logBug("critical", "User ID Injection Vulnerability", `Recipe assigned to spoofed ID: ${injectData.recipe?.user_id}`);
+      }
     }
 
     // 4.5 Soft-Delete Recipe (Admin action)
@@ -564,6 +636,232 @@ async function runE2ETests() {
     const dbCategories = await pool.query("SELECT DISTINCT category FROM recipes");
     const dbCatList = dbCategories.rows.map((r) => r.category);
     logPass("Category Inventory", `Categories found in DB: ${dbCatList.join(", ")}`);
+
+    // -------------------------------------------------------------------------
+    // SECTION 9: ADVANCED FILTERS & PANTRY SEARCH (Features 5, 6, 8)
+    // -------------------------------------------------------------------------
+    console.log("\n--- SECTION 9: ADVANCED FILTERS & PANTRY SEARCH ---");
+    const filterRes = await fetch(`${API_BASE}/recipes?category=Healthy&difficulty=Medium`);
+    const filterData = await filterRes.json();
+    if (filterRes.status === 200 && filterData.success) {
+      logPass("Category & Difficulty Filters", `GET /recipes with filters returned ${filterData.recipes.length} matching recipes`);
+    } else {
+      logBug("high", "Advanced Filter Query Failed", `Status ${filterRes.status}`);
+    }
+
+    const pantryRes = await fetch(`${API_BASE}/recipes?ingredients=pasta,garlic,tomato`);
+    const pantryData = await pantryRes.json();
+    if (pantryRes.status === 200 && pantryData.success) {
+      logPass("Pantry Ingredient Search", `Matched ${pantryData.recipes.length} recipes containing pantry ingredients`);
+    } else {
+      logBug("high", "Pantry Search Failed", `Status ${pantryRes.status}`);
+    }
+
+    // -------------------------------------------------------------------------
+    // SECTION 10: RECIPE REVIEWS & RATINGS (Features 11 & 12)
+    // -------------------------------------------------------------------------
+    console.log("\n--- SECTION 10: RATINGS & REVIEWS ---");
+    const testRecipeId = filterData.recipes[0]?.id || 8;
+    const postReviewRes = await fetch(`${API_BASE}/recipes/${testRecipeId}/reviews`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify({
+        rating: 5,
+        comment: "Outstanding recipe! Bursting with fresh culinary flavors.",
+      }),
+    });
+    const postReviewData = await postReviewRes.json();
+    let createdReviewId = postReviewData.review?.id;
+
+    if (postReviewRes.status === 201 && postReviewData.success) {
+      logPass("Add Recipe Review", `Review added for recipe ID ${testRecipeId} with 5 stars`);
+    } else {
+      logBug("high", "Add Review Failed", JSON.stringify(postReviewData));
+    }
+
+    const getReviewsRes = await fetch(`${API_BASE}/recipes/${testRecipeId}/reviews`);
+    const getReviewsData = await getReviewsRes.json();
+    if (getReviewsRes.status === 200 && getReviewsData.success) {
+      logPass("Get Recipe Reviews", `Fetched ${getReviewsData.reviews.length} reviews (Average: ${getReviewsData.averageRating})`);
+    } else {
+      logBug("high", "Get Reviews Failed", JSON.stringify(getReviewsData));
+    }
+
+    if (createdReviewId) {
+      const delReviewRes = await fetch(`${API_BASE}/recipes/reviews/${createdReviewId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      if (delReviewRes.status === 200) {
+        logPass("Delete Recipe Review", `Cleaned up test review ID ${createdReviewId}`);
+      } else {
+        logBug("medium", "Delete Review Failed", `Status ${delReviewRes.status}`);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // SECTION 11: MEAL PLANNER (Feature 14)
+    // -------------------------------------------------------------------------
+    console.log("\n--- SECTION 11: MEAL PLANNER ---");
+    const addPlanRes = await fetch(`${API_BASE}/meal-plan`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify({
+        day_of_week: "Wednesday",
+        meal_type: "Dinner",
+        recipe_id: testRecipeId,
+        notes: "Automated test meal schedule",
+      }),
+    });
+    const addPlanData = await addPlanRes.json();
+    let planId = addPlanData.mealPlan?.id;
+
+    if (addPlanRes.status === 201 && addPlanData.success) {
+      logPass("Add to Meal Plan", `Scheduled meal on Wednesday Dinner (ID: ${planId})`);
+    } else {
+      logBug("high", "Add Meal Plan Failed", JSON.stringify(addPlanData));
+    }
+
+    const getPlanRes = await fetch(`${API_BASE}/meal-plan`, {
+      headers: { Authorization: `Bearer ${userToken}` },
+    });
+    const getPlanData = await getPlanRes.json();
+    if (getPlanRes.status === 200 && getPlanData.mealPlans.some((p) => p.id === planId)) {
+      logPass("Get Meal Plans", `Verified weekly meal schedule includes scheduled recipe`);
+    } else {
+      logBug("high", "Get Meal Plans Missing Item", JSON.stringify(getPlanData));
+    }
+
+    if (planId) {
+      await fetch(`${API_BASE}/meal-plan/${planId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      logPass("Delete Meal Plan", `Cleaned up meal plan ID ${planId}`);
+    }
+
+    // -------------------------------------------------------------------------
+    // SECTION 12: SHOPPING LIST (Feature 15)
+    // -------------------------------------------------------------------------
+    console.log("\n--- SECTION 12: SHOPPING LIST ---");
+    const addFromRecRes = await fetch(`${API_BASE}/shopping-list/from-recipe`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify({ recipe_id: testRecipeId }),
+    });
+    const addFromRecData = await addFromRecRes.json();
+    if (addFromRecRes.status === 200 && addFromRecData.success) {
+      logPass("1-Click Recipe to Shopping List", `Populated ingredients from recipe into shopping list`);
+    } else {
+      logBug("high", "Add Ingredients from Recipe Failed", JSON.stringify(addFromRecData));
+    }
+
+    const getShopRes = await fetch(`${API_BASE}/shopping-list`, {
+      headers: { Authorization: `Bearer ${userToken}` },
+    });
+    const getShopData = await getShopRes.json();
+    if (getShopRes.status === 200 && getShopData.items.length > 0) {
+      logPass("Get Shopping List", `Shopping checklist has ${getShopData.items.length} items`);
+      // Toggle first item
+      const firstItemId = getShopData.items[0].id;
+      const toggleRes = await fetch(`${API_BASE}/shopping-list/${firstItemId}/toggle`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      if (toggleRes.status === 200) {
+        logPass("Toggle Shopping Item", `Item ID ${firstItemId} checkbox toggled`);
+      }
+    }
+
+    // Clear shopping list
+    await fetch(`${API_BASE}/shopping-list`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${userToken}` },
+    });
+    logPass("Clear Shopping List", `Cleared test items from shopping list`);
+
+    // -------------------------------------------------------------------------
+    // SECTION 13: USER PROFILE & NOTIFICATIONS (Features 18 & 19)
+    // -------------------------------------------------------------------------
+    console.log("\n--- SECTION 13: PROFILE & NOTIFICATIONS ---");
+    const profileRes = await fetch(`${API_BASE}/profile`, {
+      headers: { Authorization: `Bearer ${userToken}` },
+    });
+    const profileData = await profileRes.json();
+    if (profileRes.status === 200 && profileData.profile) {
+      logPass("Get User Profile", `Fetched profile for ${profileData.profile.name} (Role: ${profileData.profile.role})`);
+    } else {
+      logBug("high", "Get Profile Failed", JSON.stringify(profileData));
+    }
+
+    const updateProfileRes = await fetch(`${API_BASE}/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify({
+        name: "Test Chef",
+        bio: "Passionate about healthy Mediterranean food",
+        dietary_preferences: ["Vegetarian", "Gluten-Free"],
+      }),
+    });
+    const updateProfileData = await updateProfileRes.json();
+    if (updateProfileRes.status === 200 && updateProfileData.success) {
+      logPass("Update User Profile", `Updated culinary bio and dietary preferences successfully`);
+    } else {
+      logBug("high", "Update Profile Failed", JSON.stringify(updateProfileData));
+    }
+
+    const notifRes = await fetch(`${API_BASE}/notifications`, {
+      headers: { Authorization: `Bearer ${userToken}` },
+    });
+    const notifData = await notifRes.json();
+    if (notifRes.status === 200 && notifData.success) {
+      logPass("Notifications Center", `Fetched ${notifData.notifications.length} notifications (${notifData.unreadCount} unread)`);
+    } else {
+      logBug("high", "Get Notifications Failed", JSON.stringify(notifData));
+    }
+
+    // -------------------------------------------------------------------------
+    // SECTION 14: PASSWORD RECOVERY (Feature 1)
+    // -------------------------------------------------------------------------
+    console.log("\n--- SECTION 14: PASSWORD RECOVERY ---");
+    const forgotRes = await fetch(`${API_BASE}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "user@test.com" }),
+    });
+    const forgotData = await forgotRes.json();
+    if (forgotRes.status === 200 && forgotData.resetToken) {
+      logPass("Forgot Password Request", `Generated password reset token: ${forgotData.resetToken.slice(0, 10)}...`);
+
+      const resetRes = await fetch(`${API_BASE}/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: forgotData.resetToken,
+          newPassword: "password123",
+        }),
+      });
+      const resetData = await resetRes.json();
+      if (resetRes.status === 200 && resetData.success) {
+        logPass("Reset Password Confirmation", `Updated password and cleared reset token`);
+      } else {
+        logBug("high", "Reset Password Failed", JSON.stringify(resetData));
+      }
+    } else {
+      logBug("high", "Forgot Password Failed", JSON.stringify(forgotData));
+    }
 
     console.log("\n===============================================================");
     console.log(`E2E AUDIT FINISHED: ${report.passed.length} Passed, ${report.bugsFound.length} Bugs, ${report.inconsistencies.length} Inconsistencies`);

@@ -111,14 +111,16 @@ const updateUserRole = async (req, res) => {
         return res.status(404).json({ success: false, message: "User not found" });
       }
       const target = userCheck.rows[0];
+      const designatedAdmin = (process.env.ADMIN_EMAIL || "naisha@test.com").toLowerCase();
       const isNaisha =
-        target.name.toLowerCase() === "naisha" ||
-        target.email.toLowerCase().includes("naisha");
+        target.email.toLowerCase() === designatedAdmin ||
+        target.email.toLowerCase() === "naishajain982@gmail.com" ||
+        (target.name.toLowerCase() === "naisha" && target.email.toLowerCase().includes("naisha"));
 
       if (!isNaisha) {
         return res.status(403).json({
           success: false,
-          message: "Only the primary administrator (Naisha) can hold administrator privileges.",
+          message: "Only the designated primary administrator can hold administrator privileges.",
         });
       }
     }

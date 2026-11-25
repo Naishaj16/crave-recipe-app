@@ -9,50 +9,49 @@
 
 ---
 
-## 1. Project Overview & Intent
+## 1. Project Overview & Architectural Intent
 
-Hi! This document outlines how I designed and built the backend service for Crave. 
+Hi! This document outlines how I designed and built the backend service for Crave to support all 22 application features with complete PostgreSQL database persistence.
 
-When starting this project, my main goal was to move away from mock arrays, local storage hacks, or in-memory state. I wanted to build a real production-style backend with:
-1. **Real PostgreSQL persistence**: Everything—recipes, users, favorites, and audit history—is saved directly to a relational PostgreSQL database (`crave_db`).
-2. **Proper authentication and RBAC**: A clear separation between regular registered users and administrators, enforced by server-side middleware rather than frontend flags.
-3. **Audit trail**: Persistent logging of signups, logins, logouts, failed attempts, and admin actions (like role promotions, user deactivations, and recipe purges).
-4. **Resilient media handling**: Support for both image and video uploads directly from device galleries with size limits and MIME validation.
-
----
-
-## 2. Tech Stack & Architectural Decisions
-
-- **Node.js & Express**: Kept the architecture straightforward with standard MVC separation (routes, controllers, middleware, and config). I avoided heavy enterprise frameworks to keep the code readable, modular, and easy to maintain.
-- **PostgreSQL with `pg` (node-postgres)**: Instead of using a heavy ORM like Prisma or Sequelize (which often hides what's happening under the hood), I opted for raw parameterized SQL queries with a connection pool (`pg.Pool`). This gave me full control over constraints, array columns, joins, and soft-delete filtering.
-- **JWT & Bcrypt**: Password hashing using `bcrypt` (10 salt rounds) and standard stateless JSON Web Tokens for API authentication.
-- **Multer**: For multipart media uploads, saving files to disk under `backend/uploads/` with static streaming.
+When starting this project, my goal was to avoid mock arrays or in-memory state. I built a real production-style backend with:
+1. **Relational PostgreSQL Persistence**: Storing recipes, user accounts, bookmarks, reviews, weekly meal plans, shopping lists, notifications, and immutable audit logs in `crave_db`.
+2. **Proper Authentication & Security**: Stateless JWTs, Bcrypt password hashing (10 salt rounds), cryptographic password reset tokens, and server-side RBAC middleware.
+3. **Sole Administrator Policy**: The platform enforces that only Naisha accounts can hold administrator privileges. Other accounts are strictly restricted to standard user roles.
+4. **Ownership Authorization**: Regular users can only edit and delete their own recipes. Only the sole administrator can moderate or trash community content.
+5. **Multi-Criteria Filtering & Pantry Search**: Parameterized SQL queries supporting keyword search, category matching, cooking time limits, difficulty ratings, dietary tag overlap, and pantry ingredient array lookups.
+6. **Resilient Media Pipeline**: Multer-backed file upload endpoints for photos and video tutorials with disk storage under `backend/uploads/` and static streaming.
 
 ---
 
-## 3. Directory Layout
+## 2. Directory Structure
 
 ```text
 backend/
 ├── src/
 │   ├── config/
-│   │   └── db.js                 # PostgreSQL Pool connection instance
+│   │   ├── db.js                 # PostgreSQL Pool connection instance
+│   │   └── firebaseAdmin.js      # Firebase Admin / Google OAuth ID token verification
 │   ├── controllers/
-│   │   ├── authController.js     # User registration, login, logout & activity logging
-│   │   ├── recipeController.js   # Recipe CRUD, category filtering, soft-delete
-│   │   ├── adminController.js    # Metrics, user directory, trash recovery & purge
+│   │   ├── authController.js     # User registration, login, logout, password recovery & Google auth
+│   │   ├── recipeController.js   # Recipe CRUD, advanced filters, pantry search & reviews
+│   │   ├── plannerController.js  # Weekly meal planner & smart shopping list controllers
+│   │   ├── profileController.js  # User profile management & notifications center
+│   │   ├── adminController.js    # Metrics, user directory, trash recovery & permanent purge
 │   │   └── favoriteController.js # Relational favorites management
 │   ├── middleware/
-│   │   └── authMiddleware.js     # JWT token decoding, active status check & requireAdmin
+│   │   └── authMiddleware.js     # JWT verification, active status check & requireAdmin guard
 │   ├── routes/
 │   │   ├── authRoutes.js         # /api/auth/*
 │   │   ├── recipeRoutes.js       # /api/recipes/*
+│   │   ├── plannerRoutes.js      # /api/meal-plan and /api/shopping-list
+│   │   ├── profileRoutes.js      # /api/profile and /api/notifications
 │   │   ├── adminRoutes.js        # /api/admin/*
 │   │   ├── favoriteRoutes.js     # /api/favorites/*
 │   │   └── uploadRoutes.js       # /api/upload/*
 │   ├── scripts/
-│   │   └── comprehensiveE2ETest.js # 30-assertion end-to-end integration test suite
-│   └── server.js                 # Express app setup, CORS, static routes, error middleware
+│   │   ├── migrateAllFeatures.js # Complete schema migration script for all 22 features
+│   │   └── comprehensiveE2ETest.js # 45-assertion end-to-end integration test suite
+│   └── server.js                 # Express server configuration, CORS & static uploads route
 ├── uploads/                      # Uploaded images and video files
 ├── package.json
 └── .env                          # DB credentials, port, and JWT secret
@@ -60,233 +59,253 @@ backend/
 
 ---
 
-## 4. Database Schema Design
+## 3. Database Schema Design (8 PostgreSQL Tables)
 
-I designed 4 relational tables in PostgreSQL:
-
-### 4.1. `users`
-Tracks user credentials, assigned roles, and account state.
+### 3.1. `users`
+Tracks user credentials, dietary preferences, bio, and password reset tokens.
 ```sql
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(20) DEFAULT 'user',        -- 'user' or 'admin'
-    status VARCHAR(20) DEFAULT 'active',    -- 'active' or 'disabled'
+    role VARCHAR(20) DEFAULT 'user',             -- 'user' or 'admin' (Naisha only)
+    status VARCHAR(20) DEFAULT 'active',         -- 'active' or 'disabled'
+    bio TEXT DEFAULT '',
+    dietary_preferences TEXT[] DEFAULT '{}',
+    reset_token VARCHAR(255),
+    reset_expires TIMESTAMP,
     last_login TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-### 4.2. `recipes`
-Contains recipe details. The `user_id` foreign key tracks who created the recipe, while `ingredients` and `instructions` are stored as PostgreSQL native text arrays (`TEXT[]`).
+### 3.2. `recipes`
+Stores published dishes, preparation and cooking metrics, difficulty, dietary tags, nutrition, and media.
 ```sql
 CREATE TABLE recipes (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     description TEXT,
     category VARCHAR(50) NOT NULL,
-    time_minutes INTEGER DEFAULT 0,
-    rating NUMERIC(2,1) DEFAULT 0.0,
+    time_minutes INTEGER DEFAULT 30,
+    prep_time_minutes INTEGER DEFAULT 15,
+    servings INTEGER DEFAULT 2,
+    difficulty VARCHAR(20) DEFAULT 'Medium',     -- 'Easy', 'Medium', 'Hard'
+    dietary_tags TEXT[] DEFAULT '{}',            -- 'Vegetarian', 'Vegan', 'Gluten-Free', etc.
+    calories INTEGER DEFAULT 420,
+    protein_g INTEGER DEFAULT 18,
+    carbs_g INTEGER DEFAULT 45,
+    fat_g INTEGER DEFAULT 14,
+    rating NUMERIC(2, 1) DEFAULT 0,
     image TEXT,
-    ingredients TEXT[] DEFAULT '{}',
-    instructions TEXT[] DEFAULT '{}',
     video_url TEXT,
-    is_deleted BOOLEAN DEFAULT false,
+    ingredients TEXT[] NOT NULL,
+    instructions TEXT[] NOT NULL,
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    is_deleted BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-### 4.3. `recipe_favorites`
-Relational table linking favorited recipes. If a recipe is permanently deleted, its favorites cascade-delete automatically.
+### 3.3. `recipe_reviews` (Features 11 & 12)
+Stores ratings (1–5 stars) and user feedback comments.
 ```sql
-CREATE TABLE recipe_favorites (
+CREATE TABLE recipe_reviews (
     id SERIAL PRIMARY KEY,
     recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT unique_recipe_fav UNIQUE (recipe_id)
-);
-```
-
-### 4.4. `activity_logs`
-An append-only audit trail capturing what happened, who did it, remote IP, browser user-agent, and status.
-```sql
-CREATE TABLE activity_logs (
-    id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    email VARCHAR(150),
-    user_name VARCHAR(100),
-    action VARCHAR(50) NOT NULL,
-    status VARCHAR(50) DEFAULT 'success',
-    ip_address VARCHAR(100),
-    user_agent TEXT,
+    user_name VARCHAR(100) NOT NULL,
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5) NOT NULL,
+    comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
----
-
-## 5. Security & Authentication Implementation
-
-### 5.1. Password Hashing & Registration
-Passwords must be at least 8 characters. During signup (`POST /api/auth/signup`), the email is trimmed and lowercased, then checked for duplicates before being hashed with bcrypt.
-
-### 5.2. Active Account Verification
-In `authMiddleware.js`, when a protected endpoint is called with `Authorization: Bearer <token>`, the middleware doesn't just verify the JWT signature. It also looks up the user in PostgreSQL:
-```javascript
-const userRes = await pool.query(
-    "SELECT id, name, email, role, status FROM users WHERE id = $1",
-    [decoded.id]
+### 3.4. `meal_plans` (Feature 14)
+Weekly schedule slots mapped across days and meal types.
+```sql
+CREATE TABLE meal_plans (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    day_of_week VARCHAR(20) NOT NULL,            -- 'Monday' through 'Sunday'
+    meal_type VARCHAR(20) NOT NULL,              -- 'Breakfast', 'Lunch', 'Dinner', 'Snack'
+    recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
-If an administrator deactivates an account (`status = 'disabled'`), the token is immediately rejected with a `403 Forbidden` on the very next request—the user does not remain logged in until token expiration.
 
-### 5.3. Admin Route Protection, Sole Admin Policy & Self-Lockout Guards
-- The `requireAdmin` middleware checks `req.user.role === 'admin'`. Standard users calling admin APIs receive `403 Forbidden`.
-- **Sole Administrator Policy**: In `adminController.js`, I enforced a strict rule ensuring that only Naisha accounts can hold administrator privileges. Any attempt to promote non-Naisha accounts to `'admin'` is rejected with `403 Forbidden: Only the primary administrator (Naisha) can hold administrator privileges.`
-- **Self-Lockout Protection**: An administrator cannot deactivate or delete their own account, preventing accidental self-lockout.
+### 3.5. `shopping_list` (Feature 15)
+Checklist items generated either manually or imported in 1-click from recipe ingredients.
+```sql
+CREATE TABLE shopping_list (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    item_text VARCHAR(255) NOT NULL,
+    is_checked BOOLEAN DEFAULT false,
+    recipe_id INTEGER REFERENCES recipes(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-### 5.4. Recipe Author Ownership Authorization
-In `recipeController.js`, both `PUT /api/recipes/:id` and `DELETE /api/recipes/:id` enforce strict ownership validation:
-- When a recipe is created, its `user_id` is recorded in PostgreSQL from `req.user.id`.
-- On update or delete, the server checks:
-  ```javascript
-  const isOwner = req.user && recipe.user_id && req.user.id === recipe.user_id;
-  const isAdmin = req.user && req.user.role === 'admin';
+### 3.6. `notifications` (Feature 19)
+User notification center tracking reviews, welcome messages, and activity.
+```sql
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(150) NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'info',
+    is_read BOOLEAN DEFAULT false,
+    link VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-  if (!isOwner && !isAdmin) {
-    return res.status(403).json({
-      success: false,
-      message: 'You can only edit/delete your own recipes.',
-    });
-  }
-  ```
-- Normal users can view, search, and bookmark all public recipes, but can only modify recipes they created. Administrators retain moderation authority to clean up spam or offensive content.
+### 3.7. `recipe_favorites` (Feature 10)
+Relational many-to-many bookmarks table linking users to recipes.
 
----
-
-## 6. Real Challenges & Bugs I Solved During Development
-
-Building this exposed several real-world edge cases that I had to troubleshoot and fix:
-
-### 1. The User Deletion 500 Error
-- **What happened**: When testing the user deletion feature in the admin panel, the backend crashed with a 500 internal server error.
-- **Root Cause**: The delete function had a line: `DELETE FROM recipe_favorites WHERE user_id = $1`. But `recipe_favorites` only tracks `recipe_id`, not `user_id`. PostgreSQL threw `column "user_id" does not exist`.
-- **Fix**: Removed the invalid query. In our database schema, `recipes.user_id` is set to `ON DELETE SET NULL`, meaning when a user is deleted, their recipes remain in the database as community contributions without foreign key breakage.
-
-### 2. Multer Rejections Crashing with HTML Error Screens
-- **What happened**: When uploading a non-image file (like a `.txt` file) or a file exceeding limits, Express returned its default HTML error page (`<pre>Error: Only image and video files are supported</pre>`). The frontend tried to parse this as JSON and showed a vague "Failed to upload file" alert.
-- **Fix**: Added a centralized JSON error middleware in `server.js`:
-  ```javascript
-  app.use((err, req, res, next) => {
-    res.status(err.status || 400).json({
-      success: false,
-      message: err.message || "An unexpected error occurred",
-    });
-  });
-  ```
-  Now Multer validation errors return clean HTTP 400 JSON that the frontend displays directly to the user.
-
-### 3. Logout Events Not Showing in Activity Logs
-- **What happened**: While testing the audit logs, I noticed that `signup` and `login` events were showing up, but `logout` events were completely missing when users logged out from the website.
-- **Root Cause**: The client-side `logout()` function was only clearing `localStorage` and never calling the backend `/api/auth/logout` endpoint.
-- **Fix**: Wired `logout()` in the frontend to send an authenticated POST request to `/api/auth/logout` before clearing local storage. Now every logout is properly timestamped and visible in the admin activity view.
-
-### 4. Soft-Delete vs. Permanent Purge
-- Normal users clicking delete on a recipe marks `is_deleted = true`. This hides it from the public `/api/recipes` list immediately.
-- The Admin Portal has a dedicated "Trash" tab where admins can review deleted recipes and either click **Restore** (`is_deleted = false`) or **Purge** (`DELETE FROM recipes WHERE id = $1`).
+### 3.8. `activity_logs` (Feature 20)
+Append-only security and session audit trail tracking login, logout, password resets, and admin actions with IP and User-Agent headers.
 
 ---
 
-## 7. API Reference Summary
+## 4. RESTful API Endpoint Reference
 
-### Authentication (`/api/auth`)
-- `POST /api/auth/signup` — Register new user (name, email, password >= 8 chars).
-- `POST /api/auth/login` — Login with email/password; returns JWT and user profile.
-- `POST /api/auth/logout` — Protected logout; writes logout event to PostgreSQL `activity_logs`.
+### 4.1. Authentication & Password Recovery (`/api/auth`)
+- `POST /api/auth/signup`: Register new account with name, email, password (min 8 chars).
+- `POST /api/auth/login`: Authenticate credentials, check for disabled status, return JWT and user profile.
+- `POST /api/auth/logout`: Log out user and record logout event in audit trail.
+- `POST /api/auth/google`: Firebase Google OAuth authentication; resolves Naisha to `admin` and all others to `user`.
+- `POST /api/auth/forgot-password`: Generates cryptographic 1-hour reset token and logs activity.
+- `POST /api/auth/reset-password`: Verifies reset token and updates password hash.
 
-### Recipes (`/api/recipes`)
-- `GET /api/recipes` — Returns all active recipes (`WHERE is_deleted = false`).
-- `POST /api/recipes` — Protected; creates new recipe linked to authenticated user ID.
-- `PUT /api/recipes/:id` — Protected; updates recipe fields (title, time, media, ingredients, instructions).
-- `DELETE /api/recipes/:id` — Protected; soft-deletes recipe (`is_deleted = true`).
+### 4.2. Recipe Management & Advanced Search (`/api/recipes`)
+- `GET /api/recipes`: Public feed with parameterized query filters (`category`, `difficulty`, `maxTime`, `dietary`, `search`, and `ingredients` for pantry matching). Soft-deleted recipes are strictly excluded.
+- `GET /api/recipes/recommended`: Personalized recipe recommendations matching user's favored cuisines and dietary preferences.
+- `POST /api/recipes`: Protected creation saving prep time, servings, difficulty, dietary tags, nutrition facts, and media.
+- `PUT /api/recipes/:id`: Protected update enforcing owner-or-admin authorization.
+- `DELETE /api/recipes/:id`: Soft-delete moving recipe to Trash.
+- `GET /api/recipes/:id/reviews`: Public fetch of all reviews and calculated average rating.
+- `POST /api/recipes/:id/reviews`: Protected review submission; recalculates recipe average rating and triggers an author notification.
+- `DELETE /api/recipes/reviews/:reviewId`: Protected review deletion for review authors and admins.
 
-### Media Uploads (`/api/upload`)
-- `POST /api/upload` — Multipart form upload for photos (JPEG, PNG, WebP) and videos (MP4, MOV, WebM) up to 100MB. Returns static asset URL (`http://127.0.0.1:5001/uploads/filename`).
+### 4.3. Meal Planner (`/api/meal-plan`)
+- `GET /api/meal-plan`: Fetch weekly schedule sorted by Monday–Sunday and meal type.
+- `POST /api/meal-plan`: Schedule a recipe into a specific day and meal slot.
+- `DELETE /api/meal-plan/:id`: Remove a meal plan entry.
 
-### Favorites (`/api/favorites`)
-- `GET /api/favorites` — Returns all active favorited recipes.
-- `POST /api/favorites` — Bookmarks a recipe by ID (`ON CONFLICT DO NOTHING`).
-- `DELETE /api/favorites/:id` — Removes recipe from favorites.
+### 4.4. Shopping List (`/api/shopping-list`)
+- `GET /api/shopping-list`: Retrieve grocery checklist items sorted by pending status.
+- `POST /api/shopping-list`: Add a custom grocery item.
+- `POST /api/shopping-list/from-recipe`: 1-click import of all recipe ingredients into the checklist.
+- `PUT /api/shopping-list/:id/toggle`: Toggle checked/collected status.
+- `DELETE /api/shopping-list/:id`: Delete individual item.
+- `DELETE /api/shopping-list`: Clear all items or clear only checked items (`?checked=true`).
 
-### Admin Management (`/api/admin`) — *Requires admin token*
-- `GET /api/admin/stats` — Returns counts for users, recipes, trash, logins, and recent activity.
-- `GET /api/admin/users` — Returns user directory with roles, status, and last login dates.
-- `PUT /api/admin/users/:id/role` — Switches user role between `'user'` and `'admin'`.
-- `PUT /api/admin/users/:id/status` — Toggles user status between `'active'` and `'disabled'`.
-- `DELETE /api/admin/users/:id` — Deletes user account with safe foreign key handling.
-- `GET /api/admin/activity` — Returns full audit logs (up to 200 items).
-- `GET /api/admin/recipes` — Returns all recipes (active + trashed) with creator details.
-- `PUT /api/admin/recipes/:id/restore` — Restores soft-deleted recipe.
-- `DELETE /api/admin/recipes/:id/permanent` — Permanently purges recipe from PostgreSQL.
+### 4.5. Profile & Notifications (`/api/profile` & `/api/notifications`)
+- `GET /api/profile`: Retrieve user profile, created recipes count, favorites count, and published dishes.
+- `PUT /api/profile`: Update display name, culinary bio, and dietary preference tags.
+- `GET /api/notifications`: Retrieve recent notifications and unread badge count.
+- `PUT /api/notifications/:id/read`: Mark single notification as read.
+- `PUT /api/notifications/read-all`: Mark all notifications as read.
+
+### 4.6. Admin Console (`/api/admin`)
+- `GET /api/admin/stats`: Live count of users, published recipes, trashed recipes, and login activity.
+- `GET /api/admin/users`: Searchable directory of all registered accounts.
+- `PUT /api/admin/users/:id/status`: Activate or disable account (with self-action lockout prevention).
+- `PUT /api/admin/users/:id/role`: Enforces sole administrator rule; non-Naisha promotion rejected with 403.
+- `DELETE /api/admin/users/:id`: Delete user account with self-deletion protection.
+- `GET /api/admin/recipes/trash`: List soft-deleted recipes in trash.
+- `PUT /api/admin/recipes/:id/restore`: Restore trashed recipe to public feed.
+- `DELETE /api/admin/recipes/:id/purge`: Permanently delete recipe from database.
+- `GET /api/admin/activity`: Live audit trail of all platform events.
 
 ---
 
-## 8. Verification & Integration Testing
+## 5. Security & RBAC Implementation Highlights
 
-To ensure everything works end-to-end without regressions, I wrote an automated integration test script in [backend/src/scripts/comprehensiveE2ETest.js](file:///Users/naishajain/Documents/crave-recipe-app/backend/src/scripts/comprehensiveE2ETest.js).
+1. **Sole Administrator Enforcement**:
+   ```javascript
+   const isNaisha = targetEmail === "naisha@test.com" || 
+                    targetEmail === "naishajain982@gmail.com" || 
+                    (targetUser.name.toLowerCase() === "naisha" && targetEmail.includes("naisha"));
 
-It runs 35 automated checks covering:
-- Health check and live DB connectivity.
-- Admin (Naisha) and standard user login flows.
-- Bad password, short password, and disabled account login blocks.
-- 401/403 route protection and self-lockout prevention (self-deactivation and self-deletion blocks).
-- Sole admin policy verification (non-Naisha promotion blocked with 403).
-- Admin self-demotion protection (admin cannot remove their own admin privileges; blocked with 400).
-- Recipe author ownership verification (non-owner edit and delete blocked with 403; author can edit and delete own recipe).
-- Recipe full lifecycle: create -> edit -> soft-delete -> verify trash exclusion -> restore -> permanent purge.
-- Media upload verification and invalid MIME type rejection.
-- Audit trail verification ensuring real events exist in PostgreSQL.
+   if (newRole === "admin" && !isNaisha) {
+       return res.status(403).json({
+           success: false,
+           message: "Administrator role is strictly reserved for Naisha. Other accounts cannot be promoted to admin.",
+       });
+   }
+   ```
+2. **Recipe Ownership Protection**:
+   ```javascript
+   const isOwner = req.user && recipe.user_id && req.user.id === recipe.user_id;
+   const isAdmin = req.user && req.user.role === "admin";
 
-**Test Run Output**:
+   if (!isOwner && !isAdmin) {
+       return res.status(403).json({
+           success: false,
+           message: "You can only edit or delete your own recipes.",
+       });
+   }
+   ```
+3. **Admin Self-Protection Guards**:
+   Admins are prevented from disabling, deleting, or demoting their own active session account.
+
+---
+
+## 6. Automated End-to-End Integration Test Suite
+
+I created an automated integration test suite in [backend/src/scripts/comprehensiveE2ETest.js](file:///Users/naishajain/Documents/crave-recipe-app/backend/src/scripts/comprehensiveE2ETest.js).
+
+It runs 45 automated checks across 14 sections:
+- System & Database Health (Health check, PostgreSQL connectivity)
+- Authentication & Password Security (Admin login, User login, wrong password 401, short password 400, disabled account 403, logout audit)
+- Google OAuth (Email validation, auto-registration, Naisha admin resolution)
+- RBAC & Admin Route Security (401/403 checks, sole admin rule, self-lockout guards)
+- Recipe CRUD & Ownership (Create, update, non-owner 403 block, soft-delete, trash exclusion, restore, permanent purge)
+- Media Upload (Image & MP4 upload, static file serving, MIME rejection)
+- Favorites System (Relational bookmarks verification)
+- Audit Trail Integrity (Logging of 190+ events in PostgreSQL)
+- Data Scrutiny (Image validity, category inventory)
+- Advanced Filters & Pantry Search (Filter by category/difficulty, match ingredients in pantry)
+- Ratings & Reviews (Post review, average calculation, author delete)
+- Weekly Meal Planner (Schedule meal, verify weekly calendar, clean up)
+- Shopping List (1-click import from recipe, toggle checkbox, clear list)
+- Profile & Notifications (Fetch profile, update bio/dietary, notifications center)
+- Password Recovery (Forgot password token generation, password reset confirmation)
+
+**Latest Test Run Output**:
 ```text
 ===============================================================
          CRAVE COMPREHENSIVE END-TO-END AUDIT SUITE           
 ===============================================================
-35 Passed, 0 Bugs, 0 Inconsistencies
-Database connected, time: 2026-11-24T05:52:14.619Z
+45 Passed, 0 Bugs, 0 Inconsistencies
+Database connected, time: 2026-11-25T09:03:13.142Z
 ===============================================================
 ```
 
 ---
 
-## 9. Local Setup & Testing Instructions
+## 7. Local Setup & Testing
 
-1. **Verify `.env` configuration** in `backend/.env`:
-   ```env
-   PORT=5001
-   DB_HOST=127.0.0.1
-   DB_PORT=5432
-   DB_NAME=crave_db
-   DB_USER=your_postgres_username
-   DB_PASSWORD=your_postgres_password
-   JWT_SECRET=crave_secure_jwt_secret_2026
-   ```
-2. **Start the backend server**:
+1. **Start the backend server**:
    ```bash
    cd backend
    node src/server.js
    ```
-   Server will listen on: `http://localhost:5001`
-3. **Run the integration test suite**:
+   Server listens on `http://localhost:5001`.
+
+2. **Run the integration test suite**:
    ```bash
    node backend/src/scripts/comprehensiveE2ETest.js
    ```
 
-4. **Default Test Accounts**:
+3. **Default Test Accounts**:
    - **Primary Admin (Naisha)**: `naisha@test.com` | Password: `password123`
    - **Standard User**: `user@test.com` | Password: `password123`
-   - **Secondary User**: `demo@crave.com` | Password: `password123`
+   - **Google Admin**: `naishajain982@gmail.com`

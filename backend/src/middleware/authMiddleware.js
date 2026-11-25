@@ -68,4 +68,34 @@ const requireAdmin = (req, res, next) => {
     next();
 };
 
-module.exports = { authenticate, requireAdmin };
+// Optional authentication - populates req.user if valid token provided, but doesn't fail if absent
+const optionalAuthenticate = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return next();
+    }
+
+    const token = authHeader.split(" ")[1];
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userRes = await pool.query(
+            "SELECT id, name, email, role, status FROM users WHERE id = $1",
+            [decoded.id]
+        );
+        if (userRes.rows.length > 0 && userRes.rows[0].status !== "disabled") {
+            const dbUser = userRes.rows[0];
+            req.user = {
+                id: dbUser.id,
+                name: dbUser.name,
+                email: dbUser.email,
+                role: dbUser.role,
+                status: dbUser.status,
+            };
+        }
+    } catch {
+        // Silently continue for optional authentication
+    }
+    next();
+};
+
+module.exports = { authenticate, requireAdmin, optionalAuthenticate };

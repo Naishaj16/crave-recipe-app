@@ -10,6 +10,26 @@ interface RecipeEditModalProps {
   onSave: (updated: Recipe) => void;
 }
 
+const CATEGORIES = [
+  "Breakfast",
+  "Lunch",
+  "Dinner",
+  "Snacks",
+  "Desserts",
+  "Beverages",
+  "Healthy",
+];
+
+const DIFFICULTIES = ["Easy", "Medium", "Hard"];
+const DIETARY_TAG_OPTIONS = [
+  "Vegetarian",
+  "Vegan",
+  "Gluten-Free",
+  "Dairy-Free",
+  "Keto",
+  "Nut-Free",
+];
+
 export default function RecipeEditModal({
   recipe,
   onClose,
@@ -19,6 +39,15 @@ export default function RecipeEditModal({
   const [description, setDescription] = useState(recipe.description || "");
   const [category, setCategory] = useState(recipe.category || "Healthy");
   const [time, setTime] = useState(recipe.time || "30 min");
+  const [prepTime, setPrepTime] = useState(recipe.prepTimeMinutes || 15);
+  const [servings, setServings] = useState(recipe.servings || 2);
+  const [difficulty, setDifficulty] = useState(recipe.difficulty || "Medium");
+  const [dietaryTags, setDietaryTags] = useState<string[]>(recipe.dietaryTags || []);
+  const [calories, setCalories] = useState(recipe.calories || 420);
+  const [proteinG, setProteinG] = useState(recipe.proteinG || 18);
+  const [carbsG, setCarbsG] = useState(recipe.carbsG || 45);
+  const [fatG, setFatG] = useState(recipe.fatG || 14);
+
   const [image, setImage] = useState(recipe.image || "");
   const [videoUrl, setVideoUrl] = useState(recipe.videoUrl || "");
   const [ingredientsText, setIngredientsText] = useState(
@@ -34,13 +63,18 @@ export default function RecipeEditModal({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // Handle Photo selection from Gallery/Files
+  const toggleDietaryTag = (tag: string) => {
+    setDietaryTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
-      setImageUploadStatus("Compressing and uploading photo...");
+      setImageUploadStatus("Compressing photo...");
       const uploadedUrl = await uploadMediaFile(file, (msg) =>
         setImageUploadStatus(msg)
       );
@@ -53,7 +87,6 @@ export default function RecipeEditModal({
     }
   };
 
-  // Handle Video selection from Gallery/Files
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -93,11 +126,19 @@ export default function RecipeEditModal({
         .map((s) => s.trim())
         .filter(Boolean);
 
-      const updatedPayload: Omit<Recipe, "id"> = {
+      const updatedPayload: Partial<Recipe> = {
         name: name.trim(),
         description: description.trim(),
         category,
         time: time.trim() || "30 min",
+        prepTimeMinutes: Number(prepTime),
+        servings: Number(servings),
+        difficulty,
+        dietaryTags,
+        calories: Number(calories),
+        proteinG: Number(proteinG),
+        carbsG: Number(carbsG),
+        fatG: Number(fatG),
         image: image.trim(),
         videoUrl: videoUrl.trim(),
         ingredients,
@@ -110,14 +151,7 @@ export default function RecipeEditModal({
       onClose();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
-      if (
-        msg.includes("Authentication required") ||
-        msg.includes("Failed to update recipe")
-      ) {
-        setError("Please sign in to your kitchen account to save changes.");
-      } else {
-        setError(msg || "Failed to save changes. Please try again.");
-      }
+      setError(msg || "Failed to save changes. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -137,77 +171,157 @@ export default function RecipeEditModal({
           <div className="modal-title-area">
             <span className="eyebrow">RECIPE STUDIO</span>
             <h2>Edit Recipe</h2>
-            <p>Modify ingredients, photo, cooking time, or video tutorial.</p>
+            <p>Modify ingredients, photo, cooking time, nutrition, or video tutorial.</p>
           </div>
 
-          {error && <div className="form-error-alert">{error}</div>}
+          {error && <div className="login-error-alert">{error}</div>}
 
-          <form onSubmit={handleSave} className="edit-form">
-            <div className="form-row">
-              <div className="form-group flex-2">
-                <label>Recipe Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Classic Tiramisu"
-                  required
-                />
-              </div>
+          <form onSubmit={handleSave} className="edit-recipe-form">
+            <div className="input-group">
+              <label>Recipe Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
 
-              <div className="form-group flex-1">
+            <div className="input-group">
+              <label>Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+              />
+            </div>
+
+            <div className="add-row">
+              <div className="input-group">
                 <label>Category</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                 >
-                  <option value="Italian">Italian</option>
-                  <option value="Healthy">Healthy</option>
-                  <option value="Breakfast">Breakfast</option>
-                  <option value="Dessert">Dessert</option>
-                  <option value="Main Course">Main Course</option>
-                  <option value="Quick Meals">Quick Meals</option>
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              <div className="form-group flex-1">
+              <div className="input-group">
+                <label>Difficulty</label>
+                <select
+                  value={difficulty}
+                  onChange={(e) => setDifficulty(e.target.value)}
+                >
+                  {DIFFICULTIES.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="input-group">
                 <label>Cook Time</label>
                 <input
                   type="text"
+                  placeholder="e.g. 30 min"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  placeholder="e.g. 25 min"
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Prep Time (min)</label>
+                <input
+                  type="number"
+                  value={prepTime}
+                  onChange={(e) => setPrepTime(Number(e.target.value))}
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Servings</label>
+                <input
+                  type="number"
+                  value={servings}
+                  onChange={(e) => setServings(Number(e.target.value))}
                 />
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Description</label>
-              <textarea
-                rows={2}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="A brief overview of flavors and technique..."
-              />
+            {/* Dietary Tags */}
+            <div className="input-group">
+              <label>Dietary Tags</label>
+              <div className="dietary-chips-group">
+                {DIETARY_TAG_OPTIONS.map((tag) => {
+                  const sel = dietaryTags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={`dietary-chip-btn ${sel ? "selected" : ""}`}
+                      onClick={() => toggleDietaryTag(tag)}
+                    >
+                      {sel ? "✓ " : "+ "}
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* PHOTO UPLOAD & URL SECTION */}
-            <div className="media-upload-section">
+            {/* Nutrition Facts */}
+            <div className="nutrition-inputs-row">
+              <div className="input-group">
+                <label>Calories (kcal)</label>
+                <input
+                  type="number"
+                  value={calories}
+                  onChange={(e) => setCalories(Number(e.target.value))}
+                />
+              </div>
+              <div className="input-group">
+                <label>Protein (g)</label>
+                <input
+                  type="number"
+                  value={proteinG}
+                  onChange={(e) => setProteinG(Number(e.target.value))}
+                />
+              </div>
+              <div className="input-group">
+                <label>Carbs (g)</label>
+                <input
+                  type="number"
+                  value={carbsG}
+                  onChange={(e) => setCarbsG(Number(e.target.value))}
+                />
+              </div>
+              <div className="input-group">
+                <label>Fat (g)</label>
+                <input
+                  type="number"
+                  value={fatG}
+                  onChange={(e) => setFatG(Number(e.target.value))}
+                />
+              </div>
+            </div>
+
+            {/* Photo Upload & URL */}
+            <div className="add-media-block">
               <div className="media-section-header">
                 <label>Recipe Photo</label>
                 {imageUploadStatus && (
-                  <span className="upload-status-hint">
-                    {imageUploadStatus}
-                  </span>
+                  <span className="upload-status-hint">{imageUploadStatus}</span>
                 )}
               </div>
-
               <div className="media-input-dual">
                 <div className="file-upload-box">
-                  <label
-                    htmlFor="edit-photo-file"
-                    className="file-upload-button"
-                  >
+                  <label htmlFor="edit-photo-file" className="file-upload-button">
                     Choose Photo from Gallery
                   </label>
                   <input
@@ -217,28 +331,21 @@ export default function RecipeEditModal({
                     onChange={handlePhotoUpload}
                     style={{ display: "none" }}
                   />
-                  <span className="upload-subtext">
-                    Auto-compressed for fast loading
-                  </span>
+                  <span className="upload-subtext">Auto-compressed</span>
                 </div>
-
                 <div className="url-input-box">
                   <span className="url-label">or paste URL:</span>
                   <input
-                    type="text"
+                    placeholder="Image URL"
                     value={image}
                     onChange={(e) => setImage(e.target.value)}
-                    placeholder="https://images.unsplash.com/... or /uploads/..."
                   />
                 </div>
               </div>
-
               {image && (
                 <div className="media-preview-bar">
                   <img src={image} alt="Preview" className="media-mini-thumb" />
-                  <span className="media-preview-text">
-                    Current photo selected
-                  </span>
+                  <span className="media-preview-text">Photo attached</span>
                   <button
                     type="button"
                     className="media-clear-btn"
@@ -250,23 +357,17 @@ export default function RecipeEditModal({
               )}
             </div>
 
-            {/* VIDEO TUTORIAL SECTION */}
-            <div className="media-upload-section">
+            {/* Video Tutorial */}
+            <div className="add-media-block">
               <div className="media-section-header">
                 <label>Video Tutorial</label>
                 {videoUploadStatus && (
-                  <span className="upload-status-hint">
-                    {videoUploadStatus}
-                  </span>
+                  <span className="upload-status-hint">{videoUploadStatus}</span>
                 )}
               </div>
-
               <div className="media-input-dual">
                 <div className="file-upload-box">
-                  <label
-                    htmlFor="edit-video-file"
-                    className="file-upload-button"
-                  >
+                  <label htmlFor="edit-video-file" className="file-upload-button">
                     Upload Video from Gallery
                   </label>
                   <input
@@ -276,22 +377,17 @@ export default function RecipeEditModal({
                     onChange={handleVideoUpload}
                     style={{ display: "none" }}
                   />
-                  <span className="upload-subtext">
-                    Supports MP4, MOV, WebM (up to 100MB)
-                  </span>
+                  <span className="upload-subtext">MP4, MOV, WebM</span>
                 </div>
-
                 <div className="url-input-box">
-                  <span className="url-label">or paste video link:</span>
+                  <span className="url-label">or paste link:</span>
                   <input
-                    type="text"
+                    placeholder="YouTube, Shorts, Reel, TikTok link"
                     value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
-                    placeholder="YouTube, Shorts, Instagram Reel, TikTok, or MP4 URL"
                   />
                 </div>
               </div>
-
               {videoUrl && (
                 <div className="video-preview-wrapper">
                   <div className="video-preview-header">
@@ -309,42 +405,38 @@ export default function RecipeEditModal({
               )}
             </div>
 
-            <div className="form-row">
-              <div className="form-group flex-1">
-                <label>Ingredients (one per line)</label>
-                <textarea
-                  rows={5}
-                  value={ingredientsText}
-                  onChange={(e) => setIngredientsText(e.target.value)}
-                  placeholder="2 cups rice&#10;4 cups water&#10;1 tsp salt&#10;1 tbsp olive oil"
-                />
-              </div>
-
-              <div className="form-group flex-1">
-                <label>Instructions (one per line)</label>
-                <textarea
-                  rows={5}
-                  value={instructionsText}
-                  onChange={(e) => setInstructionsText(e.target.value)}
-                  placeholder="Rinse rice thoroughly&#10;Bring water to a boil&#10;Simmer covered for 18 minutes&#10;Fluff with fork and serve"
-                />
-              </div>
+            <div className="input-group">
+              <label>Ingredients (one per line or comma-separated)</label>
+              <textarea
+                value={ingredientsText}
+                onChange={(e) => setIngredientsText(e.target.value)}
+                rows={4}
+              />
             </div>
 
-            <div className="modal-actions-bar">
+            <div className="input-group">
+              <label>Step-by-Step Instructions (one per line)</label>
+              <textarea
+                value={instructionsText}
+                onChange={(e) => setInstructionsText(e.target.value)}
+                rows={4}
+              />
+            </div>
+
+            <div className="modal-actions-container">
+              <button
+                type="submit"
+                className="primary-action-btn"
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save Recipe Changes"}
+              </button>
               <button
                 type="button"
-                className="modal-cancel-btn"
+                className="secondary-action-btn"
                 onClick={onClose}
               >
                 Cancel
-              </button>
-              <button
-                type="submit"
-                className="modal-save-btn"
-                disabled={isSaving}
-              >
-                {isSaving ? "Saving Changes..." : "Save Changes"}
               </button>
             </div>
           </form>
@@ -353,4 +445,3 @@ export default function RecipeEditModal({
     </div>
   );
 }
-
