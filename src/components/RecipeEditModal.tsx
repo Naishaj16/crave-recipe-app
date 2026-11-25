@@ -84,7 +84,7 @@ export default function RecipeEditModal({
 
     try {
       const ingredients = ingredientsText
-        .split("\n")
+        .split(/[\n,]+/)
         .map((s) => s.trim())
         .filter(Boolean);
 
@@ -208,7 +208,7 @@ export default function RecipeEditModal({
                     htmlFor="edit-photo-file"
                     className="file-upload-button"
                   >
-                    📁 Choose Photo from Gallery
+                    Choose Photo from Gallery
                   </label>
                   <input
                     id="edit-photo-file"
@@ -225,10 +225,10 @@ export default function RecipeEditModal({
                 <div className="url-input-box">
                   <span className="url-label">or paste URL:</span>
                   <input
-                    type="url"
+                    type="text"
                     value={image}
                     onChange={(e) => setImage(e.target.value)}
-                    placeholder="https://images.unsplash.com/..."
+                    placeholder="https://images.unsplash.com/... or /uploads/..."
                   />
                 </div>
               </div>
@@ -267,7 +267,7 @@ export default function RecipeEditModal({
                     htmlFor="edit-video-file"
                     className="file-upload-button"
                   >
-                    📁 Upload Video from Gallery
+                    Upload Video from Gallery
                   </label>
                   <input
                     id="edit-video-file"

@@ -59,11 +59,11 @@ async function runE2ETests() {
     // -------------------------------------------------------------------------
     console.log("\n--- SECTION 2: AUTHENTICATION & SECURITY ---");
     
-    // 2.1 Valid Admin Login
+    // 2.1 Valid Admin Login (Naisha is sole administrator)
     const adminLoginRes = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "demo@crave.com", password: "password123" }),
+      body: JSON.stringify({ email: "naisha@test.com", password: "password123" }),
     });
     const adminLoginData = await adminLoginRes.json();
     let adminToken = adminLoginData.token;
@@ -91,7 +91,7 @@ async function runE2ETests() {
     const wrongPassRes = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "demo@crave.com", password: "wrongpassword!!!" }),
+      body: JSON.stringify({ email: "naisha@test.com", password: "wrongpassword!!!" }),
     });
     if (wrongPassRes.status === 401) {
       logPass("Wrong Password Guard", "Returns 401 Unauthorized for incorrect password");
@@ -197,7 +197,7 @@ async function runE2ETests() {
     }
 
     // 3.4 Self-Deactivation Guard (Admin cannot deactivate own account)
-    const selfDeactivateRes = await fetch(`${API_BASE}/admin/users/4/status`, {
+    const selfDeactivateRes = await fetch(`${API_BASE}/admin/users/${adminLoginData.user.id}/status`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -212,7 +212,7 @@ async function runE2ETests() {
     }
 
     // 3.5 Self-Deletion Guard (Admin cannot delete own account)
-    const selfDeleteRes = await fetch(`${API_BASE}/admin/users/4`, {
+    const selfDeleteRes = await fetch(`${API_BASE}/admin/users/${adminLoginData.user.id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${adminToken}` },
     });
@@ -220,6 +220,36 @@ async function runE2ETests() {
       logPass("Admin Self-Deletion Protection", "Admin is blocked from deleting their own account (400 Bad Request)");
     } else {
       logBug("high", "Admin Self-Deletion Vulnerability", `Self-delete returned ${selfDeleteRes.status}`);
+    }
+
+    // 3.6 Sole Administrator Guard (Only Naisha can hold admin role)
+    const promoteNonNaishaRes = await fetch(`${API_BASE}/admin/users/${userLoginData.user.id}/role`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify({ role: "admin" }),
+    });
+    if (promoteNonNaishaRes.status === 403) {
+      logPass("Sole Admin Protection", "Only Naisha accounts can hold administrator privileges (403 Forbidden for other users)");
+    } else {
+      logBug("critical", "Admin Privilege Leak", `Non-Naisha promotion returned status ${promoteNonNaishaRes.status}`);
+    }
+
+    // 3.7 Admin Self-Demotion Guard (Admin cannot demote own account)
+    const selfDemoteRes = await fetch(`${API_BASE}/admin/users/${adminLoginData.user.id}/role`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify({ role: "user" }),
+    });
+    if (selfDemoteRes.status === 400) {
+      logPass("Admin Self-Demotion Protection", "Admin is blocked from demoting their own role (400 Bad Request)");
+    } else {
+      logBug("high", "Admin Self-Demotion Vulnerability", `Self-demote returned ${selfDemoteRes.status}`);
     }
 
     // -------------------------------------------------------------------------
@@ -302,7 +332,79 @@ async function runE2ETests() {
       logBug("high", "Recipe Update Failed", JSON.stringify(updateData));
     }
 
-    // 4.5 Soft-Delete Recipe
+    // 4.4a Recipe Ownership Guard: Non-owner standard user cannot edit admin recipe
+    const unauthEditRes = await fetch(`${API_BASE}/recipes/${createdRecipeId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify({ name: "Malicious Edit By Other User" }),
+    });
+    if (unauthEditRes.status === 403) {
+      logPass("Recipe Edit Ownership Guard", "Standard user cannot edit recipes owned by other users (403 Forbidden)");
+    } else {
+      logBug("critical", "Recipe Ownership Breach", `Expected 403 Forbidden on foreign recipe edit, got ${unauthEditRes.status}`);
+    }
+
+    // 4.4b Recipe Ownership Guard: Non-owner standard user cannot delete admin recipe
+    const unauthDelRes = await fetch(`${API_BASE}/recipes/${createdRecipeId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${userToken}` },
+    });
+    if (unauthDelRes.status === 403) {
+      logPass("Recipe Delete Ownership Guard", "Standard user cannot delete recipes owned by other users (403 Forbidden)");
+    } else {
+      logBug("critical", "Recipe Delete Breach", `Expected 403 Forbidden on foreign recipe delete, got ${unauthDelRes.status}`);
+    }
+
+    // 4.4c Standard User Own Recipe Lifecycle: User creates, edits, and deletes their OWN recipe
+    const userRecipeRes = await fetch(`${API_BASE}/recipes`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify({
+        name: `User Own Dish ${Date.now()}`,
+        category: "Healthy",
+        time_minutes: 20,
+        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
+        instructions: ["Mix", "Serve"],
+      }),
+    });
+    const userRecipeData = await userRecipeRes.json();
+    const userRecipeId = userRecipeData.recipe?.id;
+
+    if (userRecipeRes.status === 201 && userRecipeId) {
+      // User edits their own recipe
+      const userEditOwnRes = await fetch(`${API_BASE}/recipes/${userRecipeId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+        body: JSON.stringify({
+          name: `User Own Dish (Modified)`,
+          category: "Healthy",
+          time_minutes: 25,
+          image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800",
+        }),
+      });
+      // User deletes their own recipe
+      const userDelOwnRes = await fetch(`${API_BASE}/recipes/${userRecipeId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+
+      if (userEditOwnRes.status === 200 && userDelOwnRes.status === 200) {
+        logPass("User Own Recipe Authorization", "User successfully edited and deleted their own recipe");
+      } else {
+        logBug("high", "User Own Recipe Access Issue", `Edit status: ${userEditOwnRes.status}, Delete status: ${userDelOwnRes.status}`);
+      }
+    }
+
+    // 4.5 Soft-Delete Recipe (Admin action)
     const softDelRes = await fetch(`${API_BASE}/recipes/${createdRecipeId}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${adminToken}` },

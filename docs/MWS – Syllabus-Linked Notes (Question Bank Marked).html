@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MWS – Syllabus-Linked Notes (Question Bank Marked)</title>
+<style>
+  :root { --ink:#1d2330; --muted:#5b6474; --line:#e3e6ec; --accent:#2f5bd3; --soft:#f4f6fb; --warn:#fff6e0; --ok:#e6f4ea; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ink); background:#fff; line-height:1.65; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 20px 70px; }
+  h1 { font-size: 1.85rem; margin: 0 0 4px; }
+  h2 { font-size: 1.3rem; border-bottom: 2px solid var(--accent); padding-bottom: 4px; margin-top: 44px; }
+  h3 { font-size: 1.1rem; margin: 30px 0 6px; }
+  .sub { color: var(--muted); margin-top: 0; }
+  .unit { font-size:.8rem; font-weight:600; color:var(--accent); text-transform:uppercase; letter-spacing:.04em; margin:0; }
+  .lbl { font-weight:700; color:var(--accent); margin:12px 0 2px; }
+  p { margin: 6px 0; }
+  .bank { background: var(--ok); border:1px solid #b9dfc4; border-radius:8px; padding:8px 12px; font-size:.9rem; margin:12px 0; }
+  .notbank { background: var(--soft); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:.9rem; margin:12px 0; color:var(--muted); }
+  .box { background: var(--soft); border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin:10px 0; }
+  .warn { background: var(--warn); border:1px solid #f1d891; border-radius:10px; padding:12px 16px; margin:14px 0; }
+  table { border-collapse: collapse; width:100%; margin:8px 0; font-size:.92rem; }
+  th, td { border:1px solid var(--line); padding:6px 8px; text-align:left; vertical-align:top; }
+  th { background: var(--soft); }
+  ul, ol { padding-left: 22px; margin: 4px 0; }
+  li { margin: 4px 0; }
+  .flow { font-family: ui-monospace, Menlo, Consolas, monospace; background:#fff; border:1px dashed #b9c2d4; border-radius:8px; padding:8px 12px; font-size:.8rem; white-space:pre; overflow-x:auto; }
+  .toc li { margin:1px 0; }
+  .toc a { color: var(--accent); text-decoration:none; }
+  .check li { list-style:none; }
+  .check li::before { content:"☐  "; color: var(--accent); }
+  .check { padding-left: 4px; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Mobile and Wireless Security – Syllabus-Linked Notes</h1>
+<p class="sub">21CSE489T · Each syllabus topic is a full 12-mark answer: definition, introduction, detailed points, advantages, disadvantages and conclusion. Green boxes list the question-bank questions the answer covers. Bank questions outside the syllabus are in Part B.</p>
+
+<div class="warn">
+<strong>How to use each topic:</strong> Write the definition, then the introduction, then the points in order. Add the advantages and disadvantages where the question asks for evaluation, comparison or critical analysis, and finish with the conclusion. For a 12-mark answer, write the points with one line of explanation each.
+</div>
+
+<div class="box toc">
+<strong>Contents</strong>
+<p><strong>Part A – Syllabus topics with bank questions</strong></p>
+<ol>
+  <li><a href="#t1">Mobile cellular network architecture</a></li>
+  <li><a href="#t2">Generations 0G–6G and access techniques</a></li>
+  <li><a href="#t3">IEEE wireless standards</a></li>
+  <li><a href="#t4">IEEE 802.11 architecture and frame</a></li>
+  <li><a href="#t5">Mobile internet networks</a></li>
+  <li><a href="#t6">Attacks and defences on cellular networks</a></li>
+  <li><a href="#t7">Wired vs wireless security</a></li>
+  <li><a href="#t8">Security issues and requirements</a></li>
+  <li><a href="#t9">Application-level security for mobile apps</a></li>
+  <li><a href="#t10">Basics of security and secure protocols</a></li>
+  <li><a href="#t11">Authentication and authorisation</a></li>
+  <li><a href="#t12">Cybersecurity challenges and mobile risks</a></li>
+  <li><a href="#t13">Incident response process</a></li>
+  <li><a href="#t14">GSM security</a></li>
+  <li><a href="#t15">GPRS security</a></li>
+  <li><a href="#t16">3G security</a></li>
+  <li><a href="#t17">Android architecture and security model</a></li>
+  <li><a href="#t18">Android development and securing apps</a></li>
+  <li><a href="#t19">Android rooting</a></li>
+  <li><a href="#t20">Intercepting Android traffic and SSL pinning</a></li>
+  <li><a href="#t21">Attacks on Android</a></li>
+  <li><a href="#t22">iOS security model and Android vs iOS</a></li>
+  <li><a href="#t23">Case studies on mobile security</a></li>
+  <li><a href="#t24">Wi-Fi security introduction and measures</a></li>
+  <li><a href="#t25">Active and passive attacks</a></li>
+  <li><a href="#t26">Denial-of-service attacks</a></li>
+  <li><a href="#t27">TCP attacks</a></li>
+  <li><a href="#t28">Trojan and dictionary attacks</a></li>
+  <li><a href="#t29">IEEE 802.11 security: WEP to WPA3</a></li>
+  <li><a href="#t30">IEEE 802.1X and EAP</a></li>
+  <li><a href="#t31">IEEE 802.11i and the four-way handshake</a></li>
+  <li><a href="#t32">Authentication in wireless networks</a></li>
+  <li><a href="#t33">Layer 3 security mechanisms</a></li>
+  <li><a href="#t34">Bluetooth technology and security</a></li>
+  <li><a href="#t35">WiMAX introduction, standards and Forum</a></li>
+  <li><a href="#t36">WiMAX architecture, OFDM, layers and frames</a></li>
+  <li><a href="#t37">WiMAX security architecture and PKM</a></li>
+  <li><a href="#t38">WiMAX security risks and 802.16e</a></li>
+  <li><a href="#t39">GSM, UMTS and GPRS summary</a></li>
+  <li><a href="#t40">VoIP security</a></li>
+  <li><a href="#t41">LTE security</a></li>
+  <li><a href="#t42">Security policy</a></li>
+  <li><a href="#t43">Implementing a security policy</a></li>
+  <li><a href="#t44">Execution environments and sandboxing</a></li>
+  <li><a href="#t45">Validation of active content</a></li>
+  <li><a href="#t46">Detection of attacks on downloadable apps</a></li>
+</ol>
+<p><strong>Part B – Bank questions outside the syllabus</strong> · <a href="#partb">Go to Part B</a></p>
+<p><strong>Part C – Multiple-choice answer key</strong> · <a href="#partc">Go to Part C</a></p>
+<p><strong>Night-before sheet and checklist</strong> · <a href="#sheet">Go to sheet</a></p>
+</div>
+
+<h2 id="parta">Part A – Syllabus topics</h2>
+
+<p class="unit">Unit I</p>
+<h3 id="t1">T1. Mobile cellular network architecture</h3>
+<p class="lbl">Definition</p>
+<p>A mobile cellular network divides a service area into cells, each served by a low-power base station that handles calls for the users inside it.</p>
+<p class="lbl">Introduction</p>
+<p>Cellular design solves the capacity problem of one large transmitter. Small cells let the same frequency be reused in distant cells, and the network hands a call from one cell to the next as the user moves.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Mobile Station (MS):</strong> the handset plus SIM, which holds the subscriber identity.</li>
+  <li><strong>BTS (base transceiver station):</strong> the radio equipment at each cell site, sending and receiving on the air interface.</li>
+  <li><strong>BSC (base station controller):</strong> controls several BTSs, allocates radio channels and manages handover between them.</li>
+  <li><strong>MSC (mobile switching centre):</strong> switches calls and connects the network to the PSTN and the Internet.</li>
+  <li><strong>HLR (home location register):</strong> stores permanent subscriber data such as the IMSI and services bought.</li>
+  <li><strong>VLR (visitor location register):</strong> stores temporary data for users currently in the MSC's area.</li>
+  <li><strong>EIR (equipment identity register):</strong> keeps IMEI white, grey and black lists to block stolen handsets.</li>
+  <li><strong>AuC (authentication centre):</strong> holds the keys used to authenticate subscribers.</li>
+  <li><strong>Call path:</strong> MS → BTS → BSC → MSC. The MSC checks the HLR, VLR, AuC and EIR before it sets up the call.</li>
+  <li><strong>Handover:</strong> when the signal from a neighbouring cell is stronger, the BSC moves the call to that cell without dropping it.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Frequency reuse gives high total capacity in a limited spectrum.</li>
+  <li>Small cells give good signal strength and low transmit power, which saves battery.</li>
+  <li>Handover gives continuous service while the user moves.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Many base stations are needed, so infrastructure and maintenance cost is high.</li>
+  <li>Co-channel interference and handover failures appear in dense areas.</li>
+  <li>The radio link is open, so it can be eavesdropped unless encrypted.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>The cellular architecture gives capacity and mobility, but its components (HLR, VLR, AuC, EIR) are also the points that security must protect.</p>
+<div class="bank">Bank: "Define mobile cellular networks" (QB Units I–II).</div>
+
+<p class="unit">Unit I</p>
+<h3 id="t2">T2. Generations 0G–6G and access techniques</h3>
+<p class="lbl">Definition</p>
+<p>Mobile generations are successive standards for cellular networks. Each one adds new services, higher speeds and, from 2G on, stronger security.</p>
+<p class="lbl">Introduction</p>
+<p>Every generation was built to fix a weakness of the previous one. 1G carried analog voice with no security at all. Each later generation added a new protection, which is why the security story of mobile networks is a story of successive fixes.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>0G:</strong> early mobile telephones (radio-telephone systems) with manual connection and no roaming.</li>
+  <li><strong>1G (1980s):</strong> analog voice only, about 2.4 kbps, with no encryption, so calls could be heard with a scanner.</li>
+  <li><strong>2G (1990s):</strong> digital voice and SMS, with basic one-way authentication and encryption (A5), about 9.6–64 kbps.</li>
+  <li><strong>2.5G / 2.75G:</strong> GPRS and EDGE add packet data to GSM.</li>
+  <li><strong>3G (UMTS):</strong> mobile internet and video calls, with mutual authentication, about 2 Mbps.</li>
+  <li><strong>4G (LTE):</strong> all-IP network with VoLTE, EPS-AKA authentication and AES encryption, about 100 Mbps to 1 Gbps.</li>
+  <li><strong>5G:</strong> massive IoT, latency around 1 ms, network slicing and better subscriber privacy through SUCI.</li>
+  <li><strong>6G:</strong> research stage, expected to use AI and terahertz frequencies.</li>
+  <li><strong>FDMA:</strong> each user gets its own frequency band (used in 1G).</li>
+  <li><strong>TDMA:</strong> users share one frequency in turns, each with a time slot (used in 2G).</li>
+  <li><strong>CDMA:</strong> all users transmit together on the same band, each with a unique spreading code (used in 3G).</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Each generation is faster, supports more services and adds protection.</li>
+  <li>Access techniques let many users share limited spectrum efficiently.</li>
+  <li>Later generations (3G onward) remove the basic weaknesses of earlier ones.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Legacy 2G and 3G stay on air, so attackers can force a phone to downgrade to the weaker network.</li>
+  <li>Each new generation needs new infrastructure, which is costly for operators.</li>
+  <li>5G and 6G increase the number of connected devices, so the attack surface grows.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Each generation improved speed, capacity and security, but legacy networks left open paths for downgrade attacks. Security must be judged across all generations in use, not just the newest.</p>
+<div class="bank">Bank: features of 2G and 3G [8m]; 1G primary characteristic [MCQ]; what 2G added over 1G [MCQ]; differences between generations 1G–5G [12m]; differences 1G to 3G [8m]; "Discuss the evolution from 1G to 5G and its impact on security architecture" [16m].</div>
+
+<p class="unit">Unit I</p>
+<h3 id="t3">T3. IEEE wireless standards</h3>
+<p class="lbl">Definition</p>
+<p>The IEEE 802 wireless standards are a family of specifications, each designed for a particular coverage area, from a personal device to a whole city.</p>
+<p class="lbl">Introduction</p>
+<p>The family is organised by range. Personal-area networks connect a few nearby devices, local-area networks cover a building, metropolitan networks cover a city, and mobile standards cover users moving at speed. Choosing the right standard depends on the distance and the mobility needed.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>802.11 (Wi-Fi):</strong> the WLAN standard, operating in the 2.4 and 5 GHz bands, with versions such as 802.11a/b/g/n/ac/ax.</li>
+  <li><strong>802.15 (WPAN):</strong> personal-area networks; Bluetooth is 802.15.1 and ZigBee is 802.15.4 (low-power sensors).</li>
+  <li><strong>802.16 (WiMAX):</strong> metropolitan broadband, covering kilometres, for fixed and then mobile users.</li>
+  <li><strong>802.20 (MBWA):</strong> mobile broadband wireless access, designed for high-speed moving users such as trains; it was not widely adopted.</li>
+  <li><strong>802.21 (MIH):</strong> Media Independent Handover; it lets a device move a session between Wi-Fi, cellular and Ethernet without losing it.</li>
+  <li><strong>MIH services:</strong> MIES (events, such as a link going down), MICS (commands, such as switching networks) and MIIS (information about nearby networks).</li>
+  <li>The standards share a common MAC design where possible, so devices can work across them.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Standards cover every range, from personal devices to metropolitan networks.</li>
+  <li>Common design principles make equipment interoperable across vendors.</li>
+  <li>802.21 keeps sessions alive while a device changes network.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Overlapping standards make it confusing to choose the right one.</li>
+  <li>802.20 never gained wide adoption, so its benefits were not realised.</li>
+  <li>802.16 at higher frequencies needs a clear line of sight.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>The IEEE 802 family covers the full range of wireless needs. Each standard has its own security model, so a network that uses several must secure each link separately.</p>
+<div class="bank">Bank: role of 802.11 [8m]; distinguish 802.15 and 802.16 [8m]; short note on 802.20 and its significance [4m]; purpose of 802.21 [8m]; "Explain the IEEE 802 family" [16m]; compare 802.11, 802.15 and 802.16 [8m]; which IEEE standard is WLAN, PAN, WiMAX, MBWA, 802.21 [MCQ]; 802.16 network type [MCQ].</div>
+
+<p class="unit">Unit I</p>
+<h3 id="t4">T4. IEEE 802.11 architecture and frame</h3>
+<p class="lbl">Definition</p>
+<p>IEEE 802.11 is the standard for wireless local area networks. It defines the stations, access points, network structures and MAC frame format that operate at the data link layer.</p>
+<p class="lbl">Introduction</p>
+<p>A Wi-Fi network is built from stations that share a radio medium. Before sending data, a station must authenticate and then associate with an access point, and every frame it sends has a fixed structure that carries addressing, sequence and security information.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Station (STA):</strong> any device with an 802.11 radio, such as a laptop or phone.</li>
+  <li><strong>Access point (AP):</strong> a station that bridges wireless traffic to the wired distribution system.</li>
+  <li><strong>Distribution system (DS):</strong> the wired backbone that links APs together.</li>
+  <li><strong>SSID:</strong> the network name broadcast in beacon frames.</li>
+  <li><strong>Infrastructure BSS:</strong> stations communicate through an AP; the normal setup for homes and offices.</li>
+  <li><strong>IBSS (ad hoc):</strong> stations communicate directly with each other, without an AP.</li>
+  <li><strong>ESS:</strong> several BSSs joined by a DS under one SSID, so a device can roam between APs.</li>
+  <li><strong>Authentication then association:</strong> the station first proves its identity, then associates with an AP to receive network service.</li>
+  <li><strong>Frame fields (nine):</strong> Frame Control (includes the WEP bit, showing that the security mechanism is applied); Duration/ID; Addresses 1–4; Sequence Control (12-bit sequence number to filter duplicates, 4-bit fragment number); Frame Body (data); and the 32-bit FCS (CRC) for error detection.</li>
+  <li><strong>Layer:</strong> 802.11 works at the data link layer (MAC and LLC) and the physical layer below it.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>The infrastructure mode centralises control and security at the AP.</li>
+  <li>The ESS structure lets users roam across a large building with one network name.</li>
+  <li>The frame structure supports duplicate filtering and error detection.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>The radio medium is shared, so stations contend for it and collisions reduce throughput.</li>
+  <li>Frame headers are visible to anyone in range, so traffic can be captured.</li>
+  <li>A rogue AP using the same SSID can imitate a real network and attract users.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>The 802.11 architecture gives a flexible, roaming-capable network, but its shared radio medium and visible frame headers make security measures such as WEP, WPA and 802.11i necessary.</p>
+<div class="bank">Bank: 802.11 works at which OSI layer [MCQ: data link].</div>
+
+<p class="unit">Unit I</p>
+<h3 id="t5">T5. Mobile internet networks</h3>
+<p class="lbl">Definition</p>
+<p>Mobile internet is the use of Internet services over cellular radio links while the user is moving, supported by a core network that routes, authenticates and bills the traffic.</p>
+<p class="lbl">Introduction</p>
+<p>When a user opens a web page on a phone, the request crosses several networks. Each stage adds a security and mobility role, so the path is a useful way to see where protection must be applied.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Path:</strong> smartphone (with SIM) → radio link → base station (eNodeB in LTE, gNodeB in 5G) → core network → Internet gateway → web server.</li>
+  <li><strong>Radio link:</strong> encrypted on the air interface, using the cipher negotiated for that generation.</li>
+  <li><strong>Core network:</strong> checks the subscriber, tracks location for mobility, routes packets and records usage for billing.</li>
+  <li><strong>Internet gateway:</strong> connects the operator network to external IP networks; a common place for firewalls.</li>
+  <li><strong>Technologies:</strong> GPRS and EDGE (2G/2.5G), 3G UMTS, 4G LTE and 5G.</li>
+  <li><strong>Challenges:</strong> congestion when many users share one cell, weak indoor coverage, battery drain from constant connection.</li>
+  <li><strong>Threats:</strong> phishing and malware through apps, fake Wi-Fi hotspots, and location tracking by the operator or an attacker.</li>
+  <li><strong>Security needs:</strong> confidentiality of data, integrity of messages, authentication of both ends, availability of service, and privacy of location and identity.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Users can reach Internet services anywhere, while moving.</li>
+  <li>It supports cloud services, navigation and location-based apps.</li>
+  <li>The core network provides central control over authentication and billing.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Shared cell capacity leads to congestion at peak times.</li>
+  <li>The operator can track location, which affects privacy.</li>
+  <li>Constant connection drains the battery and raises the exposure to attacks.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Mobile internet connects users to the world from anywhere, but every stage of the path needs its own protection, from the radio link to the application.</p>
+<div class="notbank">Bank: no question in the uploaded banks is worded on this topic directly. Related bank questions are answered under T6, T11 and T12.</div>
+
+<p class="unit">Unit I</p>
+<h3 id="t6">T6. Attacks and defences on cellular networks</h3>
+<p class="lbl">Definition</p>
+<p>Cellular network attacks try to intercept, track, impersonate or disrupt mobile users and services, using the radio interface, the signalling network or the core.</p>
+<p class="lbl">Introduction</p>
+<p>Cellular networks carry voice, messages and banking traffic over open radio, and they rely on signalling between operators. Attacks can therefore start at the air interface or inside the core, and defences must be layered to match.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Eavesdropping:</strong> capturing the radio signal to read calls and messages. Defence: air-interface encryption (A5, UEA, EEA).</li>
+  <li><strong>IMSI catcher (fake base station):</strong> a rogue transmitter that forces a phone to reveal its IMSI and location. Defence: mutual authentication, so the phone checks the network.</li>
+  <li><strong>Man-in-the-middle:</strong> relaying and altering traffic between two parties. Defence: strong authentication and end-to-end encryption.</li>
+  <li><strong>Replay:</strong> resending a captured valid message. Defence: timestamps, sequence numbers and nonces.</li>
+  <li><strong>Denial of service:</strong> overloading the cell or core so users cannot connect. Defence: firewalls, intrusion detection, rate limiting and anomaly detection.</li>
+  <li><strong>SS7 attacks:</strong> abuse of the signalling network that connects operators, to track users or intercept calls and SMS. Defence: signalling firewalls and operator filtering.</li>
+  <li><strong>Malware:</strong> malicious apps that read messages or steal credentials. Defence: app vetting, permission control and updates.</li>
+  <li><strong>Impact example:</strong> an IMSI catcher reveals the subscriber's identity and location before encryption starts, so the attacker can then track or target the user.</li>
+  <li><strong>Layered defence:</strong> radio layer (encryption and mutual authentication); network layer (firewalls, intrusion detection, signalling filters); application layer (secure coding, permission control).</li>
+</ul>
+<p class="lbl">Advantages (of layered defence)</p>
+<ul>
+  <li>A breach in one layer can still be stopped by another.</li>
+  <li>Each layer can be tuned to the threats it faces.</li>
+  <li>Mutual authentication defeats fake base stations at the source.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Many layers add cost, configuration work and complexity.</li>
+  <li>Old signalling protocols such as SS7 are hard to change, so some attacks persist.</li>
+  <li>Downgrade to older networks can bypass the stronger protections.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Cellular attacks exploit the radio link, the signalling network and the user. The strongest defence is layered: mutual authentication and encryption at the radio layer, filtering at the signalling layer, and secure applications on the phone.</p>
+<div class="bank">Bank: SS7 attack, identify the target [MCQ]; mention two attacks and their impact [8m]; main attacks and mitigation [4m]; defence against DoS in mobile networks [MCQ]; response to a DoS attack [MCQ]; analyse attacks at different layers [16m]; "Critically assess the vulnerability of LTE to IMSI catching" [15m, see T41].</div>
+
+<p class="unit">Unit I</p>
+<h3 id="t7">T7. Wired vs wireless security</h3>
+<p class="lbl">Definition</p>
+<p>Wired security protects a network mainly through physical access control to cables, ports and rooms. Wireless security must protect signals that travel through open air to any receiver in range.</p>
+<p class="lbl">Introduction</p>
+<p>In a wired office, an attacker must reach a cable or switch port, so physical security is a strong first defence. A Wi-Fi signal leaves the building, so a person in the car park can capture traffic without ever entering. The security model must therefore change from controlling access to the cable to controlling who can read and send the radio signal.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Access medium:</strong> wired networks need physical access to a cable; wireless signals reach anyone in range.</li>
+  <li><strong>Boundary:</strong> a wired network has a clear physical edge; a wireless network's edge is its radio range, which is hard to control.</li>
+  <li><strong>Eavesdropping:</strong> capture is passive and undetectable in wireless networks; in wired networks, it needs a tap or a compromised switch.</li>
+  <li><strong>Mobility:</strong> wireless devices move between access points, creating handover points that an attacker can exploit.</li>
+  <li><strong>Device limits:</strong> handsets have limited battery and processor power, which restricts how heavy the security can be.</li>
+  <li><strong>Jamming:</strong> wireless networks can be disrupted by radio interference, which has no direct wired equivalent.</li>
+  <li><strong>Response:</strong> wireless needs encryption, strong authentication and access control, because physical protection no longer covers the medium.</li>
+</ul>
+<p class="lbl">Advantages (of wireless)</p>
+<ul>
+  <li>Mobility and no cabling, so networks are cheap to extend.</li>
+  <li>Quick to deploy in places where cabling is hard.</li>
+</ul>
+<p class="lbl">Disadvantages (of wireless security)</p>
+<ul>
+  <li>Easier to eavesdrop, intercept and jam.</li>
+  <li>Harder to control who connects and to detect unauthorised devices.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Wired security depends on physical control; wireless security depends on cryptography and authentication, because the signal is always reachable.</p>
+<div class="bank">Bank: compare wired and wireless vulnerabilities [8m]; security differences between wired and wireless [8m]; "Why is wireless more susceptible to eavesdropping?" [MCQ: open-air transmission].</div>
+
+<p class="unit">Unit I</p>
+<h3 id="t8">T8. Security issues and security requirements</h3>
+<p class="lbl">Definition</p>
+<p>Security issues are the threats that can harm a mobile network or its users. Security requirements are the properties the network must have to counter those threats.</p>
+<p class="lbl">Introduction</p>
+<p>Mobile communication needs the classic CIA triad, extended with authentication, authorisation, non-repudiation and privacy. Each requirement answers one or more of the issues, and the balance between them depends on how the network is used.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Security issues:</strong> signal interception, unauthorised access, identity theft, SIM or device cloning, rogue access points, session hijacking, and loss of devices that hold banking data.</li>
+  <li><strong>Confidentiality:</strong> data can be read only by the intended receiver, achieved by encryption (A5, UEA, EEA, AES).</li>
+  <li><strong>Integrity:</strong> data cannot be changed unnoticed, achieved by message integrity codes such as UIA, EIA or CCMP.</li>
+  <li><strong>Availability:</strong> services remain usable, which requires protection against denial of service and jamming.</li>
+  <li><strong>Authentication:</strong> both user and network prove identity; mutual authentication stops fake networks.</li>
+  <li><strong>Authorisation:</strong> after identity is confirmed, the user receives only the rights needed (least privilege).</li>
+  <li><strong>Non-repudiation:</strong> a sender cannot deny sending a message, usually through digital signatures; this matters for payments.</li>
+  <li><strong>Privacy:</strong> identity and location are protected, for example by using a temporary identity such as TMSI or GUTI.</li>
+  <li><strong>Secure handover:</strong> the session moves to a new cell or network without being exposed or dropped.</li>
+</ul>
+<p class="lbl">Advantages (of meeting the requirements)</p>
+<ul>
+  <li>Builds user trust and meets legal and regulatory compliance.</li>
+  <li>Reduces fraud, data loss and identity theft.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Adds cost, battery use and processing delay.</li>
+  <li>Key management becomes complex as the number of devices grows.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Every issue maps to a requirement. A secure mobile network must meet all of them, because a weakness in one (for example, one-way authentication) can undo the others.</p>
+<div class="bank">Bank: "three pillars of security in wireless communication" [short]; four challenges in securing mobile communication [short]; "Discuss the importance of security requirements" [8m]; secure handover as a security requirement [MCQ]; encryption protects confidentiality [MCQ]; static routing is not a requirement [MCQ].</div>
+
+<p class="unit">Unit I</p>
+<h3 id="t9">T9. Security for mobile applications and application-level security</h3>
+<p class="lbl">Definition</p>
+<p>Application-level security places protective controls inside the mobile app itself, so that data stays protected whatever the network does.</p>
+<p class="lbl">Introduction</p>
+<p>Network security protects data only while it travels. Once it reaches the device, the app must protect it. Many breaches come from apps that store data in plain text, trust unchecked input or use weak authentication, so application-level security is a necessary layer.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Secure storage:</strong> never keep passwords or banking data in plain text; use the Keystore or the platform's secure storage.</li>
+  <li><strong>Authentication:</strong> use strong passwords, biometrics or multi-factor authentication, and do not rely on a single weak check.</li>
+  <li><strong>Secure transport:</strong> send all data over HTTPS or TLS, and pin the certificate where possible.</li>
+  <li><strong>Input validation:</strong> check and sanitise all input to block injection (SQL, command) and buffer overflow.</li>
+  <li><strong>Least privilege:</strong> request only the permissions the app needs at the time it needs them.</li>
+  <li><strong>Session management:</strong> use short-lived tokens, log out inactive sessions and protect against session hijacking.</li>
+  <li><strong>Testing and updates:</strong> test with static and dynamic tools, and patch vulnerabilities quickly.</li>
+  <li><strong>Obfuscation:</strong> make reverse engineering harder, but do not rely on it alone.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Protects data end to end, whatever the network.</li>
+  <li>Allows fine-grained access control by role and by function.</li>
+  <li>Defends against SQL injection, cross-site scripting and session hijacking.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Developers must build and maintain every control.</li>
+  <li>Encryption and checks use battery and processor time.</li>
+  <li>Keys and certificates are difficult to manage across many devices.</li>
+  <li>Inconsistent implementation across apps creates weak points.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Application-level security is the last line of defence and the most direct protection for user data. It works best together with network-level security, not instead of it.</p>
+<div class="bank">Bank: advantage of application-level security [MCQ: independence from network security]; disadvantage [MCQ: inconsistent implementation]; "Critically analyse application-level security, advantages and disadvantages" [8m]; difference between application-level and network-level security [short]; security risks of mobile apps [short]; "Elaborate the security requirements for mobile applications and propose a secure development lifecycle" [16m; see T43]; "Which layer is most vulnerable?" [MCQ: application].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t10">T10. Basics of security and secure communication protocols</h3>
+<p class="lbl">Definition</p>
+<p>Mobile security protects smartphones and tablets from threats that could compromise data or device integrity. A secure communication protocol protects data in transit between two parties, providing confidentiality, integrity and authentication.</p>
+<p class="lbl">Introduction</p>
+<p>Phones hold personal, financial and business data and are always connected, often to untrusted networks. Device security protects the phone itself, and secure protocols protect the data while it moves. Both are needed for a complete defence.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Main threats:</strong> malware, phishing, Wi-Fi snooping, data leakage through poor permissions, and loss or theft of the device.</li>
+  <li><strong>TLS/SSL:</strong> a protocol that authenticates the server (and optionally the client) with certificates and encrypts the channel, used for web, email and messaging.</li>
+  <li><strong>HTTPS:</strong> HTTP carried over TLS, the standard way to protect web traffic on a phone.</li>
+  <li><strong>VPN:</strong> creates an encrypted tunnel from the device to a trusted endpoint, protecting traffic on untrusted networks such as public Wi-Fi.</li>
+  <li><strong>Device practices:</strong> PIN or biometric lock, full-disk encryption, permission control, remote wipe through MDM, prompt updates, installing only from trusted stores, and two-factor authentication.</li>
+  <li><strong>Protocol goals:</strong> confidentiality (encryption), integrity (MAC or AEAD), authentication (certificates or keys) and replay protection (nonces or sequence numbers).</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Strong, widely supported encryption protects data in transit.</li>
+  <li>A VPN hides traffic from local attackers on public Wi-Fi.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>A VPN moves trust to its provider and endpoint.</li>
+  <li>Certificate warnings can confuse users and lead them to accept unsafe connections.</li>
+  <li>Encryption and handshakes add overhead on slow links.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Secure protocols protect data in motion, and device security protects data at rest. A mobile user needs both, plus careful habits on untrusted networks.</p>
+<div class="bank">Bank: define a secure communication protocol, with two examples [short]; primary goal of secure protocols [MCQ: authentication]; protocol for secure transmission over a mobile network [MCQ: HTTPS]; protocol for a mobile app to communicate securely [MCQ: TLS/SSL]; primary purpose of a VPN [MCQ]; "Apply secure communication protocols to a mobile messaging app and explain the steps" [8m; steps: TLS transport, mutual authentication, end-to-end encryption, keys in Keystore or Secure Enclave, input validation, certificate pinning].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t11">T11. Authentication and authorisation</h3>
+<p class="lbl">Definition</p>
+<p>Authentication confirms who a party is. Authorisation decides what that authenticated party is allowed to do.</p>
+<p class="lbl">Introduction</p>
+<p>Authentication is always the first step: an unknown party cannot be given rights. Authorisation then applies rules to the verified identity, so the same person can have different rights in different parts of a system. Together they protect against identity theft and data leaks.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Authentication factors:</strong> something you know (password or PIN), something you have (SIM, token, phone), something you are (fingerprint, face).</li>
+  <li><strong>Multi-factor authentication:</strong> combines two or more factors, so one stolen factor is not enough.</li>
+  <li><strong>Mutual authentication:</strong> both sides verify each other; in mobile networks, the phone checks the network as well as the reverse, which stops fake base stations.</li>
+  <li><strong>Authorisation:</strong> access control by roles and permissions; for example, a student can view marks but not edit them.</li>
+  <li><strong>Least privilege:</strong> each user, process or app gets only the access needed for the task.</li>
+  <li><strong>Separation of duties:</strong> critical actions need more than one party, which reduces insider fraud.</li>
+  <li><strong>Why it matters:</strong> authentication stops impostors, and authorisation limits what a compromised account can damage.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Multi-factor authentication is much harder to defeat than a password alone.</li>
+  <li>Role-based authorisation makes access easy to manage and audit.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Passwords are often weak or reused across services.</li>
+  <li>SIM swapping can bypass SMS codes.</li>
+  <li>Biometrics can give false matches and raise privacy concerns about stored templates.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Authentication establishes trust and authorisation controls it. A secure mobile system needs strong, mutual authentication and carefully limited rights.</p>
+<div class="bank">Bank: importance of authentication and authorisation in mobile applications [8m]; function of authentication in network security [short]; "Why is authentication crucial in mobile network security?" [MCQ: verifies identity]; "Why is authorisation crucial in mobile app security?" [short]; "Why is mutual authentication important in secure communications?" [MCQ: both parties verify each other]; "Why is mutual authentication important in LTE?" [8m; see T41].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t12">T12. Challenges of cybersecurity and mobile security risks</h3>
+<p class="lbl">Definition</p>
+<p>Mobile cybersecurity challenges are the factors that make mobile devices hard to protect. Mobile security risks are the specific threats that exploit those factors.</p>
+<p class="lbl">Introduction</p>
+<p>Mobility, personal use, open networks and rapid software change make phones a prime target. The challenges come from the device, the network, the apps and the people who use them, so the risks cover all four.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Device loss and theft:</strong> a lost phone exposes data unless it is encrypted and can be wiped.</li>
+  <li><strong>Untrusted apps and stores:</strong> malicious apps can appear in unofficial stores or pass review.</li>
+  <li><strong>Insecure networks:</strong> public Wi-Fi and fake hotspots expose traffic.</li>
+  <li><strong>BYOD:</strong> personal devices on corporate networks mix personal and business data.</li>
+  <li><strong>Frequent updates and fragmentation:</strong> many versions and vendors mean some devices stay unpatched.</li>
+  <li><strong>Weak authentication:</strong> reused or simple passwords and no second factor.</li>
+  <li><strong>App-based risks:</strong> excessive permissions, insecure code and insecure storage.</li>
+  <li><strong>Network-based risks:</strong> unsecured Wi-Fi, fake hotspots and Bluetooth exploits.</li>
+  <li><strong>Social engineering:</strong> phishing by email and smishing by SMS, which trick users into giving credentials.</li>
+  <li><strong>OS risks:</strong> rooting, jailbreaking and privilege escalation that bypass the sandbox.</li>
+  <li><strong>Limited visibility:</strong> organisations cannot see or control most personal devices.</li>
+</ul>
+<p class="lbl">Advantages (of mobility that creates these risks)</p>
+<ul>
+  <li>Productivity, location services and constant access to information.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Risks grow with every new app, network and user.</li>
+  <li>Users are often the weakest link, because they click links and grant permissions without thinking.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>The challenges are technical and human. Protecting mobile users needs device controls, safe networks, careful apps and regular user training.</p>
+<div class="bank">Bank: two cybersecurity challenges specific to mobile devices [short]; four challenges in securing mobile communication [short]; four common cyber threats in mobile communication [short]; a mobile user on an open Wi-Fi: two risks [8m]; security risks associated with mobile apps [short]; "Discuss the common challenges in mobile cybersecurity and how they affect users" [8m].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t13">T13. Incident response process</h3>
+<p class="lbl">Definition</p>
+<p>Incident response is the planned process for detecting, handling and learning from a security incident, so that damage is limited and the incident does not recur.</p>
+<p class="lbl">Introduction</p>
+<p>A mobile incident, such as a stolen phone with banking apps or an infected corporate device, can spread quickly. A tested process lets the team respond in a set order rather than improvising. The NIST SP 800-61 model describes six stages.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Preparation:</strong> written policies, tools for logging and analysis, backups, and a trained response team.</li>
+  <li><strong>Detection and analysis:</strong> identify the incident from alerts or user reports, judge its severity, and collect evidence without destroying it.</li>
+  <li><strong>Containment:</strong> stop the spread by isolating the device from the network, disabling the affected account, or revoking access tokens.</li>
+  <li><strong>Eradication:</strong> remove the cause, such as malware, a malicious app or a vulnerable setting.</li>
+  <li><strong>Recovery:</strong> restore systems from clean backups, reset credentials and monitor closely for repeat activity.</li>
+  <li><strong>Lessons learned:</strong> review what happened, record findings, and update policy and training.</li>
+  <li><strong>Example:</strong> a lost company phone is reported; the team remote-wipes it, revokes its certificates, checks logs for accesses, and updates the BYOD policy.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Faster and more consistent response than ad hoc action.</li>
+  <li>Good records support audits, legal needs and future prevention.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Depends on trained staff and continuous monitoring.</li>
+  <li>Hard to apply to personal (BYOD) devices that the organisation does not control.</li>
+  <li>Costly to maintain and test regularly.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Incident response turns a security breach into a managed event. Its value depends on preparation before the incident and on the lessons learned after it.</p>
+<div class="bank">Bank: primary purpose of incident response [MCQ: respond to and manage breaches]; significance of incident response [short]; objectives of incident response [short]; "Analyse the strengths and limitations of the incident response process for mobile threats" [8m]; example of an incident response for a company's phones [case].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t14">T14. GSM security</h3>
+<p class="lbl">Definition</p>
+<p>GSM security is the set of mechanisms that authenticate the subscriber to the network, encrypt the radio link and protect the subscriber's identity, based on a secret key Ki stored in the SIM and the network.</p>
+<p class="lbl">Introduction</p>
+<p>GSM was the first digital cellular standard with security built in. Its design used challenge-response authentication and a stream cipher on the air link. The design was strong for its time but has known weaknesses, and it is the base on which GPRS and 3G were built.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Shared secret:</strong> Ki is stored in the SIM and the AuC, and never sent over the air.</li>
+  <li><strong>Challenge:</strong> the network sends a random number RAND to the phone.</li>
+  <li><strong>A3 (authentication):</strong> the SIM computes SRES from RAND and Ki; the network compares it with its own result. Only then is the phone accepted.</li>
+  <li><strong>A8 (key generation):</strong> produces the ciphering key Kc from RAND and Ki.</li>
+  <li><strong>A5 (encryption):</strong> a stream cipher encrypts the air link using Kc. A5/1 is the strong-export version and is weak; A5/2 is weaker and A5/3 is stronger.</li>
+  <li><strong>Anonymity:</strong> the IMSI is sent rarely; a temporary identity TMSI is used for most messages.</li>
+  <li><strong>One-way authentication:</strong> only the phone is checked; the phone does not authenticate the network.</li>
+  <li><strong>No integrity:</strong> control messages are not protected against modification.</li>
+  <li><strong>Steps to secure GSM:</strong> keep Ki secret in the SIM and AuC; use TMSI; avoid downgrade to A5/0 or 2G; move to 3G or LTE, which add mutual authentication.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Simple and widely deployed, with the secret held in tamper-resistant SIM hardware.</li>
+  <li>TMSI limits how often the permanent identity is exposed.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>One-way authentication lets a fake base station pass as the network.</li>
+  <li>A5/1 is weak and can be broken by an attacker with the right equipment.</li>
+  <li>No end-to-end encryption and no integrity on signalling.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>GSM introduced SIM-based authentication and air-link encryption, but one-way authentication and weak ciphers made it vulnerable. Its successors fixed these problems.</p>
+<div class="bank">Bank: "What are the steps involved in securing a GSM network?" [short]; encryption algorithms used in GSM [short: A5]; "What does the A5/1 algorithm provide?" [MCQ: voice encryption]; "Differentiate between GSM and GPRS" [8m; see T15]; "Explain the security of GSM with a diagram" [16m].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t15">T15. GPRS security</h3>
+<p class="lbl">Definition</p>
+<p>GPRS (General Packet Radio Service) adds packet data to GSM. Its security extends GSM's mechanisms to the packet core, which connects the phone to external IP networks.</p>
+<p class="lbl">Introduction</p>
+<p>GPRS lets a phone send and receive IP packets, so it needs a core that routes packets. This adds nodes and links that GSM did not have, and each one brings new exposure. GPRS security therefore inherits GSM's strengths and weaknesses and adds some of its own.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Inherited mechanisms:</strong> Ki-based authentication, A3/A8 for the key, and TMSI for identity protection.</li>
+  <li><strong>SGSN (serving GPRS support node):</strong> delivers packets to and from the phone and manages its mobility and authentication.</li>
+  <li><strong>GGSN (gateway GPRS support node):</strong> connects the packet core to external IP networks such as the Internet.</li>
+  <li><strong>GEA algorithms:</strong> GEA1, GEA2 and GEA3 encrypt packet data between the phone and the SGSN; some references add GEA4.</li>
+  <li><strong>Encryption gap:</strong> the link between the SGSN and GGSN is not encrypted, so packets are exposed inside the core.</li>
+  <li><strong>No end-to-end protection:</strong> data is protected only over the radio and up to the SGSN.</li>
+  <li><strong>Fake base stations:</strong> the one-way authentication of GSM still allows IMSI catchers.</li>
+  <li><strong>GSM vs GPRS:</strong> GSM protects a circuit-switched voice call; GPRS protects packet data, which passes through more nodes and is therefore more exposed.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Always-on packet data, and efficient use of the radio channel.</li>
+  <li>Inherits the SIM-based identity of GSM.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>No encryption between SGSN and GGSN, so core traffic can be sniffed.</li>
+  <li>No end-to-end encryption and no mutual authentication.</li>
+  <li>Weaker than UMTS on every security measure.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>GPRS brought packet data to mobile phones but added exposure in the core. It shows why security must cover every node on the path, not just the radio link.</p>
+<div class="bank">Bank: "Differentiate between GSM and GPRS in terms of security mechanisms" [8m]; "Analyse the effectiveness of security protocols in 3G vs GPRS" [16m; see T16]; "Analyse and compare GSM, GPRS and 3G" [16m; see T16].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t16">T16. 3G security</h3>
+<p class="lbl">Definition</p>
+<p>3G (UMTS) security provides mutual authentication through AKA, stronger encryption and integrity protection for signalling, and identity protection through temporary identities.</p>
+<p class="lbl">Introduction</p>
+<p>3G was designed to fix the weaknesses of GSM and GPRS. Its main change is that the phone also checks the network, which defeats fake base stations. It also adds integrity protection, which GSM never had, and stronger ciphers.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Mutual authentication (AKA):</strong> the USIM and the Home Network both prove knowledge of shared secrets, so a fake station fails.</li>
+  <li><strong>Authentication vectors:</strong> the Home Network generates vectors with RAND, AUTN, XRES and keys, and the Serving Network uses them to authenticate the user.</li>
+  <li><strong>Encryption:</strong> UEA1 (based on the KASUMI block cipher) and UEA2 (based on SNOW 3G), with 128-bit keys.</li>
+  <li><strong>Integrity:</strong> UIA1 and UIA2 protect signalling messages against modification and replay.</li>
+  <li><strong>Identity protection:</strong> TMSI is used for most messages, and the IMSI is sent rarely.</li>
+  <li><strong>USIM:</strong> the successor to the SIM; it stores the IMSI, the key K and the algorithms.</li>
+  <li><strong>Home Network:</strong> the operator's core that authenticates the user and generates vectors.</li>
+  <li><strong>Serving Network:</strong> the network currently giving service, which relies on the Home Network's vectors.</li>
+  <li><strong>Remaining issue:</strong> 3G still allows a downgrade to 2G, where the stronger protections are lost.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Mutual authentication and integrity protection for signalling.</li>
+  <li>Stronger 128-bit encryption than GSM.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>The downgrade path to 2G remains open to attack.</li>
+  <li>KASUMI is less trusted than newer ciphers, and some IMSI exposure is still possible.</li>
+  <li>Requires more network equipment and coordination than GSM.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>3G is a major step: mutual authentication and integrity close the gaps that made GSM and GPRS easy to attack. Its remaining weakness is the fallback to older networks.</p>
+<div class="bank">Bank: how 3G improves on GPRS security [8m]; main function of USIM [MCQ: user authentication]; how the 3G model improves on GSM [MCQ: mutual authentication]; name two encryption algorithms used in GSM and 3G [short: A5, KASUMI/UEA1]; "Analyse the effectiveness of security protocols in 3G vs GPRS" [16m]; "Analyse and compare GSM, GPRS and 3G" [16m].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t17">T17. Android architecture and security model</h3>
+<p class="lbl">Definition</p>
+<p>Android is a mobile operating system built on the Linux kernel. Its architecture is layered, and its security model isolates each app and controls what it can access.</p>
+<p class="lbl">Introduction</p>
+<p>Android's openness has helped it spread, and its security model must protect users in that open environment. The model works through the layers: the kernel isolates processes, the framework enforces permissions, and hardware-backed features protect keys and boot.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Applications layer:</strong> the apps the user installs and uses.</li>
+  <li><strong>Application framework:</strong> provides services such as the Activity Manager and Content Providers, and enforces permission checks.</li>
+  <li><strong>Native libraries and Android Runtime (ART):</strong> libraries such as WebKit and SQLite, and the runtime that runs app code.</li>
+  <li><strong>Hardware Abstraction Layer (HAL):</strong> a standard interface between the framework and the device hardware.</li>
+  <li><strong>Linux kernel:</strong> manages processes, memory, drivers and SELinux policy.</li>
+  <li><strong>Sandbox:</strong> each app runs under its own Linux UID and process, so it cannot read another app's data by default.</li>
+  <li><strong>Permissions:</strong> declared in the manifest; normal permissions are granted at install, and dangerous permissions (such as camera or contacts) are requested at run time from Android 6.0.</li>
+  <li><strong>App signing:</strong> every app is signed; an update must carry the same signature.</li>
+  <li><strong>SELinux:</strong> mandatory access control that limits what each process can do, even for the root user.</li>
+  <li><strong>Verified boot and Keystore:</strong> verified boot checks each boot stage; Keystore stores keys in hardware-backed storage.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Strong per-app isolation through the kernel.</li>
+  <li>Open platform with clear and user-visible permission controls.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Fragmentation means many devices receive security updates late.</li>
+  <li>Sideloading and rooting can bypass the protections.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Android's security rests on the kernel sandbox, permissions, signing and hardware-backed keys. Its strength depends on the device staying updated and unrooted.</p>
+<div class="bank">Bank: key components of the Android security model [8m]; how Android architecture contributes to device security [8m]; Linux kernel is central to Android's security [MCQ]; Android's permission model [short]; "How does Android's permission model enhance security?" [MCQ: isolating apps and controlling access].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t18">T18. Fundamentals of Android development and securing apps</h3>
+<p class="lbl">Definition</p>
+<p>Android development builds apps from components that communicate through Intents. Securing an app means protecting its data, its components and its code.</p>
+<p class="lbl">Introduction</p>
+<p>Apps are written mainly in Java or Kotlin and packaged as APK files. Each app is made of components, and the components talk to each other and to other apps through Intents. Every one of these links is a possible attack path, so the developer must secure them.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Activities:</strong> the screens of the app; they can be started by other apps if exported.</li>
+  <li><strong>Services:</strong> background work, such as downloads or music playback.</li>
+  <li><strong>Broadcast Receivers:</strong> respond to system or app events.</li>
+  <li><strong>Content Providers:</strong> share structured data with other apps; a common source of leaks if not protected.</li>
+  <li><strong>Intents:</strong> messages used to start components or pass data; implicit Intents can be intercepted by other apps.</li>
+  <li><strong>Encrypt sensitive data</strong> with the Keystore instead of plain files or shared preferences.</li>
+  <li><strong>Use TLS with certificate pinning</strong> for all network traffic.</li>
+  <li><strong>Request only needed permissions;</strong> be especially careful with microphone, camera, contacts, location and SMS.</li>
+  <li><strong>Restrict exported components</strong> and validate every incoming Intent and input.</li>
+  <li><strong>Obfuscate the code</strong> with ProGuard or R8 to slow reverse engineering.</li>
+  <li><strong>Never keep secrets</strong> in source code, resources or logs.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Rich platform APIs for security, including the Keystore and the permission model.</li>
+  <li>Each component can be restricted on its own.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>An exported component opened by mistake can be abused by any app.</li>
+  <li>Security depends on developer discipline and regular review.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Secure Android development means limiting what each component exposes, protecting stored and transmitted data, and requesting only the rights the app needs.</p>
+<div class="bank">Bank: two methods to secure Android applications [short]; "Describe any two methods to secure Android applications" [8m]; permissions to be cautious about in a secure Android app and why [8m]; "Explain the full lifecycle of an Android app from development to deployment" [16m; see T43].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t19">T19. Android rooting</h3>
+<p class="lbl">Definition</p>
+<p>Rooting gives the user administrator (root) access to the Android system, usually by unlocking the bootloader and installing a <code>su</code> binary that grants root to chosen apps.</p>
+<p class="lbl">Introduction</p>
+<p>Android is designed to limit the user and each app to a restricted set of rights. Rooting removes those limits. The gain is control, but many of the sandbox and integrity protections that protect the user depend on those limits, so rooting changes the security model.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>How it is done:</strong> unlock the bootloader (which wipes the device), install a custom recovery, and install the <code>su</code> binary or a root manager.</li>
+  <li><strong>Sandbox weakened:</strong> a root process can read the data of any app, which removes per-app isolation.</li>
+  <li><strong>Malware route:</strong> malicious code only needs to obtain root once to gain full control.</li>
+  <li><strong>Integrity checks fail:</strong> attestation and verified boot report the device as modified, so banking and payment apps may refuse to run.</li>
+  <li><strong>Updates blocked or broken:</strong> system patches may fail, leaving known flaws open.</li>
+  <li><strong>Exposure to SELinux changes:</strong> changing SELinux policy can disable mandatory access control.</li>
+  <li><strong>Prevention:</strong> keep the device unrooted; use root detection and attestation in sensitive apps; install only from official stores; keep updates on.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Full control of the device, including custom system settings.</li>
+  <li>Custom ROMs, removal of pre-installed apps and full-system backups.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Much higher exposure to malware and data theft.</li>
+  <li>Voids the warranty and can break banking and payment apps.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Rooting trades the device's built-in protections for control. For a security-aware user, the risk is usually greater than the benefit, especially on a phone that holds banking data.</p>
+<div class="bank">Bank: "What is mobile rooting? Mention two security risks" [short]; "Describe the role of rooting in Android and its security implications" [8m]; "How does rooting affect installed apps' security?" [8m]; "A user rooted their Android device... what risk?" [MCQ: increased vulnerability to malware]; "Evaluate how rooting increases attack vectors and suggest preventive measures" [16m].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t20">T20. Intercepting Android traffic and SSL pinning</h3>
+<p class="lbl">Definition</p>
+<p>Intercepting Android traffic means routing an app's network traffic through a proxy so that it can be inspected. SSL pinning means the app accepts only a known certificate or public key for its server.</p>
+<p class="lbl">Introduction</p>
+<p>Testers and attackers both want to see what an app sends. Interception is an authorised testing technique; SSL pinning is the defence that stops a proxy or fake server from reading the traffic, even when the device trusts an extra certificate.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Setup (authorised testing only):</strong> run an interception proxy such as Burp Suite on a computer; point the device's Wi-Fi proxy to it.</li>
+  <li><strong>Certificate:</strong> install the proxy's certificate as a trusted CA on the device so HTTPS traffic can be decrypted for inspection.</li>
+  <li><strong>Pinning bypass in testing:</strong> if the app pins its certificate, tools such as Frida can disable the pin so the test can continue.</li>
+  <li><strong>SSL pinning:</strong> the app compares the server certificate or public key with a stored value and refuses any mismatch.</li>
+  <li><strong>Why pinning matters:</strong> a rogue trusted CA, or a user who installs a malicious certificate, cannot intercept a pinned app.</li>
+  <li><strong>Tools in analysis:</strong> MobSF (static and dynamic scanning), Frida (runtime hooking), APKTool (decompiling), ProGuard (obfuscation).</li>
+  <li><strong>What testers look for:</strong> cleartext traffic, weak TLS settings, accepted invalid certificates and secrets in traffic.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Blocks man-in-the-middle attacks, even when a rogue CA is installed.</li>
+  <li>Testers can find pinning flaws and traffic problems before release.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>When the server certificate is rotated, the app breaks unless the pins are updated.</li>
+  <li>Makes debugging and support harder.</li>
+  <li>Can be bypassed on a rooted device with the right tools.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Interception shows where an app leaks data; SSL pinning stops the same interception from working against a real user. Developers should pin and manage pin rotation carefully.</p>
+<div class="bank">Bank: "How can SSL pinning enhance app security?" [MCQ: detecting fake servers]; "Which tool is used for dynamic analysis of mobile applications?" [MCQ: Frida]; "Which tool is used for mobile app vulnerability scanning?" [short: MobSF]; "A banking app transmits data unencrypted; what issues and mitigations?" [8m].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t21">T21. Attacks on Android</h3>
+<p class="lbl">Definition</p>
+<p>Attacks on Android exploit apps, components, storage, networks and the operating system to steal data or take control of the device.</p>
+<p class="lbl">Introduction</p>
+<p>Most attacks rely on a user installing a malicious or over-permissioned app, on an insecure network or on a flaw in an app's own code. Knowing the common attack types helps developers test for them and users recognise them.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Malicious apps and repackaging:</strong> a legitimate app is decompiled, malicious code is added, and it is re-signed and distributed. Sideloading raises the risk.</li>
+  <li><strong>Intent spoofing:</strong> a crafted Intent from another app forces an exported component to perform actions it should refuse.</li>
+  <li><strong>Insecure data storage:</strong> passwords or tokens stored in plain files, shared preferences or external storage, which other apps or a thief can read.</li>
+  <li><strong>Man-in-the-middle:</strong> traffic intercepted on insecure networks, especially when the app accepts any certificate.</li>
+  <li><strong>WebView abuse:</strong> untrusted web content in a WebView reaches app functions through a JavaScript bridge.</li>
+  <li><strong>Privilege escalation:</strong> a kernel or driver flaw gives an attacker root.</li>
+  <li><strong>Excessive permissions:</strong> an app with access to contacts, location and SMS can leak data even without an exploit.</li>
+  <li><strong>Trojan apps:</strong> apps that work as advertised while hiding malicious code, such as spyware.</li>
+</ul>
+<p class="lbl">Advantages (for defenders)</p>
+<ul>
+  <li>Knowing these attacks guides secure coding, testing and user training.</li>
+</ul>
+<p class="lbl">Disadvantages (for users)</p>
+<ul>
+  <li>Attacks often succeed through apps that look normal.</li>
+  <li>Many attacks leave no visible sign on the device.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Android attacks combine app flaws, weak storage and user trust. Defence needs secure code, minimal permissions, safe transport and careful app installation.</p>
+<div class="bank">Bank: "Explain how insecure data storage can be exploited with examples" [8m]; "What is a Trojan app?" [MCQ: functions normally while hiding malicious code]; "Which of these is a sign an app may be malicious?" [MCQ: unnecessary permissions]; "Why is permission over-requesting a security concern?" [MCQ]; "Which is not a common mobile vulnerability?" [MCQ: HTTPS use].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t22">T22. iOS security model and Android vs iOS</h3>
+<p class="lbl">Definition</p>
+<p>The iOS security model is a closed, hardware-rooted design in which Apple controls the software and the app store. Android is an open platform with a per-app sandbox and many device makers and stores. Comparing them shows the trade-off between control and openness.</p>
+<p class="lbl">Introduction</p>
+<p>Both platforms protect boot, keys, apps and data. Their differences lie in who controls the software, how apps are approved and how much freedom the user keeps.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Secure boot chain:</strong> iOS starts from the hardware Boot ROM, and each stage checks the next before running it.</li>
+  <li><strong>Secure Enclave:</strong> a separate processor that holds keys and handles biometric data.</li>
+  <li><strong>Code signing:</strong> only code signed by Apple can run.</li>
+  <li><strong>App sandbox:</strong> each app is isolated; access to other data needs entitlements granted by Apple.</li>
+  <li><strong>Data Protection:</strong> files are encrypted with keys tied to the passcode.</li>
+  <li><strong>App Store review:</strong> apps are checked before release.</li>
+  <li><strong>Android comparison:</strong> verified boot, a per-app UID sandbox, Keystore, many stores, and higher malware risk through sideloading.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li><strong>iOS:</strong> tight control, store review and lower malware risk.</li>
+  <li><strong>Android:</strong> openness, customisation and choice of stores.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li><strong>iOS:</strong> closed platform, limited user control and vendor lock-in.</li>
+  <li><strong>Android:</strong> more malware exposure and fragmented updates.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>iOS is stronger by default because the platform is controlled end to end. Android gives users more freedom, with more risk unless the user and the device maker keep it secure.</p>
+<div class="bank">Bank: "Compare Android and iOS security models" [8m and 16m]; "Critically evaluate Android and iOS, including sandboxing, permissions and malware" [16m]; "Compare Android and iOS in terms of downloadable app security mechanisms" [8m]; security model for iOS [short].</div>
+
+<p class="unit">Unit II</p>
+<h3 id="t23">T23. Case studies on mobile security</h3>
+<p class="lbl">Definition</p>
+<p>A case study examines a mobile security failure, its causes and impact, and the design that would have prevented it.</p>
+<p class="lbl">Introduction</p>
+<p>The question banks ask for three kinds of case: a data leak from a social media app, an unencrypted banking app, and a compromised app. The examples below are illustrative, not real incidents, and the same method applies to any case in exam.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Social media data leak:</strong> causes include weak login (no multi-factor authentication, reused passwords), tokens stored in plain text on the device, unencrypted traffic and over-broad permissions.</li>
+  <li><strong>Robust design for the social media app:</strong> multi-factor authentication, short-lived tokens in the Keystore or Secure Enclave, TLS with pinning, least-privilege permissions, server-side rate limiting, monitoring and an incident response plan.</li>
+  <li><strong>Unencrypted banking app:</strong> anyone on the same network can read login data and transactions. Fix: TLS for all traffic, certificate pinning, encrypted storage, and prompt updates.</li>
+  <li><strong>Compromised app:</strong> the usual flaws are weak authentication, insecure storage and no update path. Prevention: secure design, testing and a working update channel.</li>
+  <li><strong>Method for any case:</strong> state the failure, list the causes, state the impact, and propose controls in layers (device, network, server, process).</li>
+</ul>
+<p class="lbl">Advantages (of the prevention measures)</p>
+<ul>
+  <li>Stops the common causes of leaks.</li>
+  <li>Limits the damage when an incident still happens.</li>
+</ul>
+<p class="lbl">Disadvantages (of the prevention measures)</p>
+<ul>
+  <li>Extra cost and development time.</li>
+  <li>Stronger login adds friction for users.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Most mobile breaches come from a small set of causes. A case answer that names the causes, the impact and layered controls scores well.</p>
+<div class="bank">Bank: "Consider a case where user data was leaked from a social media app. Analyse the causes and suggest a robust design" [16m]; "Suppose a banking app transmits data unencrypted; what issues and mitigations?" [8m]; "Evaluate a real-world case of a compromised mobile app and how it could have been prevented" [15m].</div>
+
+<p class="unit">Unit III</p>
+<h3 id="t24">T24. Wi-Fi security introduction and security measures</h3>
+<p class="lbl">Definition</p>
+<p>Wi-Fi security protects wireless networks from unauthorised access and data breaches, using encryption, authentication and network segmentation.</p>
+<p class="lbl">Introduction</p>
+<p>Radio signals reach everyone in range, so a Wi-Fi network needs protection against eavesdropping, intrusion and misuse. Some common measures look like security but give little real protection, so the answer must separate the real measures from the cosmetic ones.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Strong encryption:</strong> WPA2 with AES-CCMP or WPA3 with SAE.</li>
+  <li><strong>Strong unique passphrase:</strong> long and random, since WPA2-Personal depends on it.</li>
+  <li><strong>SSID hiding:</strong> reduces visibility but gives no real security, because the SSID appears in management frames.</li>
+  <li><strong>MAC address filtering:</strong> easy to defeat, because an attacker can read an allowed address and spoof it.</li>
+  <li><strong>Segmentation:</strong> separate guest and corporate networks through VLANs, so a breach stays contained.</li>
+  <li><strong>802.1X:</strong> per-user authentication for enterprise networks.</li>
+  <li><strong>Admin hygiene:</strong> change the router's admin password, update firmware and disable WPS.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>WPA2 and WPA3 give real confidentiality and authentication.</li>
+  <li>Segmentation limits the spread of a breach.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>SSID hiding and MAC filtering give a false sense of security.</li>
+  <li>A weak passphrase defeats WPA2 and WPA3-Personal.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Real Wi-Fi security comes from strong encryption, strong authentication and segmentation. Cosmetic measures should never replace them.</p>
+<div class="bank">Bank: "Design a secure Wi-Fi network for a small office incorporating 802.11i" [8m] (see T31); "Analyse the impact of default passwords on Wi-Fi routers" [8m] (Part B); MAC filtering as a measure [MCQ].</div>
+
+<p class="unit">Unit III</p>
+<h3 id="t25">T25. Active and passive attacks</h3>
+<p class="lbl">Definition</p>
+<p>A passive attack observes traffic without changing it. An active attack alters, injects or disrupts traffic or services.</p>
+<p class="lbl">Introduction</p>
+<p>The difference decides which security goal is threatened and whether the victim notices. Passive attacks threaten secrecy quietly; active attacks threaten integrity and availability and usually leave evidence.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Passive attacks:</strong> eavesdropping, sniffing and traffic analysis, which learns patterns from who talks to whom and when.</li>
+  <li><strong>Passive target:</strong> confidentiality; the victim usually does not know.</li>
+  <li><strong>Active attacks:</strong> message modification, packet injection, rogue access points and deauthentication floods.</li>
+  <li><strong>Active target:</strong> integrity and availability; the victim usually notices a disruption.</li>
+  <li><strong>Masquerade and replay:</strong> active attacks that pretend to be another party or resend captured messages.</li>
+  <li><strong>Defence against passive attacks:</strong> encryption, which makes captured data useless.</li>
+  <li><strong>Defence against active attacks:</strong> integrity codes, authentication, protected management frames and intrusion detection.</li>
+</ul>
+<p class="lbl">Advantages (for the attacker)</p>
+<ul>
+  <li>Passive attacks are very hard to detect.</li>
+  <li>Active attacks can change data and disrupt services.</li>
+</ul>
+<p class="lbl">Disadvantages (for the attacker)</p>
+<ul>
+  <li>Passive attacks gain only what is visible, so encryption blocks them.</li>
+  <li>Active attacks leave traces and are easier to detect.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Passive attacks are about secrecy and are stopped by encryption. Active attacks are about control and are stopped by integrity, authentication and monitoring.</p>
+<div class="bank">Bank: "Differentiate between active and passive attacks on wireless networks" [8m]; "Which attack involves intercepting data without altering it?" [MCQ: passive]; "Describe the attacks on wireless networks" [short].</div>
+
+<p class="unit">Unit III</p>
+<h3 id="t26">T26. Denial-of-service attacks</h3>
+<p class="lbl">Definition</p>
+<p>A denial-of-service (DoS) attack makes a network or service unavailable to its users by overwhelming it or exploiting a flaw that crashes it.</p>
+<p class="lbl">Introduction</p>
+<p>Availability is one of the CIA requirements, and wireless networks are easy to disrupt because the radio medium is shared. DoS can target the radio, the management frames or the IP services, and each needs a different response.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Buffer overflow:</strong> sending oversized input that overwrites memory, crashing or stalling the target.</li>
+  <li><strong>Flood attacks:</strong> saturating the target with packets; they succeed when the attacker has more bandwidth than the target.</li>
+  <li><strong>Deauthentication flood:</strong> forged deauthentication frames disconnect clients from a Wi-Fi network repeatedly.</li>
+  <li><strong>RF jamming:</strong> radio interference on the channel that stops all communication.</li>
+  <li><strong>DDoS:</strong> many compromised sources attack at once, making the flood hard to block at one point.</li>
+  <li><strong>Detection:</strong> repeated unexplained disconnections, many deauthentication frames, spikes in connection requests, and rising latency.</li>
+  <li><strong>Mitigation:</strong> rate limiting, anomaly detection, protected management frames (802.11w), and WPA2 or WPA3.</li>
+</ul>
+<p class="lbl">Advantages (of the defences)</p>
+<ul>
+  <li>Rate limiting and 802.11w block many floods and forged frames.</li>
+  <li>Anomaly detection can spot new attack patterns early.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>DDoS is hard to stop at a single point.</li>
+  <li>Rate limiting can block legitimate users during busy periods.</li>
+  <li>RF jamming is hard to defeat without locating and removing the jammer.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>DoS attacks are cheap and effective, so defence needs layered controls and monitoring at the radio, network and service levels.</p>
+<div class="bank">Bank: "A user reports frequent disconnections from Wi-Fi. How would you determine if a DoS attack is occurring?" [8m]; "Which of the following is a characteristic of a DoS attack?" [MCQ: disruption of services]; "Which approach helps mitigate DoS attacks in a Wi-Fi network?" [MCQ: MAC filtering; see note in Part C]; "A common defence against DoS in mobile networks?" [MCQ: rate limiting].</div>
+
+<p class="unit">Unit III</p>
+<h3 id="t27">T27. TCP attacks</h3>
+<p class="lbl">Definition</p>
+<p>TCP attacks exploit the way TCP sets up, tracks and ends connections, using spoofed packets, predicted sequence numbers and the handshake state.</p>
+<p class="lbl">Introduction</p>
+<p>TCP trusts the addresses and sequence numbers in packets. A forger who can predict or see those values can take over a session, flood the server or end a connection, so TCP-level protection is needed on wireless links as well as wired ones.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Session hijacking:</strong> the attacker predicts the sequence numbers and sends spoofed packets, so the receiver accepts the attacker's data and drops the real sender's.</li>
+  <li><strong>SYN flooding:</strong> many SYN packets with spoofed sources leave the server waiting for handshakes that never complete, filling its queue.</li>
+  <li><strong>RST attack:</strong> forged reset packets end a session such as a VPN or SSH connection.</li>
+  <li><strong>TCP spoofing:</strong> forged IP and sequence numbers inject data or gain access to a service.</li>
+  <li><strong>Protection:</strong> run the session over IPsec or TLS, so forged packets fail authentication.</li>
+  <li><strong>Random initial sequence numbers:</strong> make prediction much harder.</li>
+  <li><strong>SYN cookies:</strong> let the server avoid storing half-open connections.</li>
+  <li><strong>Filtering and monitoring:</strong> drop forged resets from unexpected sources and watch for anomalies.</li>
+</ul>
+<p class="lbl">Advantages (of the protections)</p>
+<ul>
+  <li>IPsec and TLS stop forged packets from being accepted.</li>
+  <li>SYN cookies protect the server queue without extra memory.</li>
+</ul>
+<p class="lbl">Disadvantages (of the protections)</p>
+<ul>
+  <li>Encryption adds overhead and some latency.</li>
+  <li>Protection does not cover unauthenticated traffic that is not wrapped.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>TCP attacks succeed because TCP trusts its header fields. Cryptographic protection and random sequence numbers remove that trust.</p>
+<div class="bank">Bank: "Implement a security protocol to protect against TCP-based attacks in a wireless network" [8m].</div>
+
+<p class="unit">Unit III</p>
+<h3 id="t28">T28. Trojan and dictionary attacks</h3>
+<p class="lbl">Definition</p>
+<p>A Trojan is malware disguised as legitimate software. A dictionary attack guesses a password by trying likely words, phrases and leaked passwords.</p>
+<p class="lbl">Introduction</p>
+<p>Trojans rely on human error to install them, and dictionary attacks rely on weak passwords. Both are cheap and effective, which is why they remain common, and both can be countered with user training, strong authentication and account controls.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Trojan delivery:</strong> phishing emails, fake updates, or downloads from untrusted sites.</li>
+  <li><strong>Trojan effect:</strong> opens a backdoor, steals data or damages the system while appearing to work.</li>
+  <li><strong>Trojan prevention:</strong> antivirus, updated software, caution with unknown emails and downloads, and least privilege.</li>
+  <li><strong>Dictionary attack:</strong> tries likely words with variations such as digits, capital letters or symbols.</li>
+  <li><strong>Online attack:</strong> guesses against the live login; lockout and rate limiting slow it.</li>
+  <li><strong>Offline attack:</strong> tests captured hashes or WPA2 handshakes on the attacker's own computer, so there is no lockout; a weak passphrase falls quickly.</li>
+  <li><strong>Mitigation:</strong> long unique passphrases, WPA3 SAE (which resists offline guessing), account lockout and monitoring of repeated failures.</li>
+</ul>
+<p class="lbl">Advantages (of the defences)</p>
+<ul>
+  <li>WPA3 SAE resists offline dictionary attacks.</li>
+  <li>Account lockout stops online guessing.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Humans are the weakest link against Trojans.</li>
+  <li>Dictionary attacks are cheap and automated.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Trojans and dictionary attacks both exploit trust and weak secrets. Technical controls and user habits must work together.</p>
+<div class="bank">Bank: "Define the term Trojan attack in wireless networks" [4m]; "Explain how dictionary attacks compromise wireless security and suggest mitigation" [8m]; "Which of the following best describes a dictionary attack?" [MCQ: trying words to guess a password]; "Which type of attack allows unauthorised messages to a user?" [MCQ: bluejacking, see T34].</div>
+
+<p class="unit">Unit III</p>
+<h3 id="t29">T29. IEEE 802.11 security: WEP to WPA3</h3>
+<p class="lbl">Definition</p>
+<p>IEEE 802.11 security is the set of mechanisms that protect WLAN traffic, developed from WEP through WPA, WPA2 and WPA3.</p>
+<p class="lbl">Introduction</p>
+<p>Each generation fixed the flaws of the one before but raised new questions. The progression shows how a security design must be checked against real attacks, not just assumed to work.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>WEP:</strong> RC4 stream cipher with a 24-bit initialisation vector (IV). The IV is too short and is reused, the CRC-32 integrity check is weak and can be forged, and the static key can be recovered from captured traffic. WEP is broken.</li>
+  <li><strong>WPA:</strong> an interim fix using TKIP, which changes keys per packet and adds a message integrity code, but still uses RC4 and is now deprecated.</li>
+  <li><strong>WPA2 (802.11i):</strong> AES in CCMP mode, giving confidentiality and integrity; the default for WPA2.</li>
+  <li><strong>WPA2-Personal:</strong> uses a shared passphrase with the four-way handshake; security depends on passphrase strength.</li>
+  <li><strong>WPA2-Enterprise:</strong> uses 802.1X and EAP with per-user credentials.</li>
+  <li><strong>WPA3:</strong> SAE (Simultaneous Authentication of Equals) replaces the pre-shared key handshake and resists offline dictionary attacks; DPP provides secure device onboarding.</li>
+</ul>
+<p class="lbl">Advantages (of the progression)</p>
+<ul>
+  <li>WPA2 with AES-CCMP is strong when the passphrase is strong.</li>
+  <li>WPA3 SAE removes the offline guessing risk for personal networks.</li>
+</ul>
+<p class="lbl">Disadvantages (of the progression)</p>
+<ul>
+  <li>WEP is insecure and WPA with TKIP is deprecated.</li>
+  <li>WPA2-Personal depends on the passphrase, and WPA3 transition modes can allow downgrades to WPA2.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Wi-Fi security moved from a broken cipher to strong AES and then to SAE. Each step was driven by a real attack, which is why current designs favour WPA3 where devices support it.</p>
+<div class="bank">Bank: "What are the limitations of WEP encryption in Wi-Fi security?" [8m]; "Critically analyse the evolution of Wi-Fi security protocols from WEP to WPA3" [16m]; "What is the main vulnerability of WEP?" [MCQ: susceptible to key cracking]; "Primary reason WEP is insecure?" [MCQ: static keys]; "Default encryption algorithm used in WPA2?" [MCQ: AES-CCMP]; "Which protocol provides the 802.11i encryption?" [MCQ: AES-CCMP].</div>
+
+<p class="unit">Unit III</p>
+<h3 id="t30">T30. IEEE 802.1X and EAP</h3>
+<p class="lbl">Definition</p>
+<p>IEEE 802.1X is a port-based access control standard that blocks a device from the network until it is authenticated. EAP (Extensible Authentication Protocol) is the framework that carries the authentication methods.</p>
+<p class="lbl">Introduction</p>
+<p>802.1X applies to wired and wireless LANs. The port is open only for authentication traffic until the device proves its identity to a central server. This centralises control and makes per-user access possible.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Supplicant:</strong> the client device that asks for access and answers the challenge.</li>
+  <li><strong>Authenticator:</strong> the switch or access point that controls the port; it passes only authentication traffic until success.</li>
+  <li><strong>Authentication server:</strong> usually RADIUS, part of an AAA (authentication, authorisation, accounting) system, which makes the decision.</li>
+  <li><strong>Pre-admission control:</strong> no data passes until the device is authenticated.</li>
+  <li><strong>Device and user detection:</strong> identify by certificate, machine ID or user credentials.</li>
+  <li><strong>Dynamic VLAN assignment:</strong> the server places each user in a VLAN according to its role.</li>
+  <li><strong>EAP methods:</strong> EAP-TLS (certificates on both sides, the strongest); PEAP and EAP-TTLS (a TLS tunnel protects a password method); EAP-FAST.</li>
+  <li><strong>Onboarding:</strong> guides new devices to install certificates.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Per-user authentication and central control of policy.</li>
+  <li>Dynamic VLANs and role-based access reduce manual setup.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Needs RADIUS and certificate infrastructure, which costs money and skill.</li>
+  <li>Complex to deploy and troubleshoot.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>802.1X with EAP-TLS is the strongest access control for enterprise Wi-Fi, but it requires the infrastructure to support it.</p>
+<div class="bank">Bank: "Describe the key components of the IEEE 802.1X authentication framework" [8m]; "Which protocol is used for port-based network access control in 802.1X?" [MCQ: EAP; see Part C note]; "What should an administrator do to strengthen authentication in 802.11x?" [MCQ: 802.1X with EAP-TLS]; "Which encryption protocol is defined in 802.11i?" [MCQ]; "What is the primary function of 802.1X?" [MCQ: network authentication].</div>
+
+<p class="unit">Unit III</p>
+<h3 id="t31">T31. IEEE 802.11i and the four-way handshake</h3>
+<p class="lbl">Definition</p>
+<p>IEEE 802.11i is the standard behind WPA2. It adds AES-based encryption, 802.1X authentication and a structured key hierarchy to WLAN security.</p>
+<p class="lbl">Introduction</p>
+<p>802.11i replaced WEP's weak design. Its central mechanism is the four-way handshake, which lets the client and access point prove they know the same master key and then install fresh session keys, without sending the master key over the air.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>PMK (pairwise master key):</strong> shared in advance (from the passphrase or from 802.1X) and never sent.</li>
+  <li><strong>PTK (pairwise transient key):</strong> derived for each session from the PMK and fresh nonces; it protects unicast traffic.</li>
+  <li><strong>GTK (group temporal key):</strong> protects broadcast and multicast traffic and is updated by a group key handshake.</li>
+  <li><strong>Encryption:</strong> CCMP with AES (WPA2); TKIP for the older WPA.</li>
+  <li><strong>Authentication:</strong> 802.1X with EAP for enterprises; PSK for homes and small offices.</li>
+</ul>
+<p class="lbl">Four-way handshake</p>
+<div class="flow">Msg 1  AP  -> STA : ANonce
+Msg 2  STA -> AP  : SNonce, MIC
+Msg 3  AP  -> STA : GTK (encrypted), MIC, install PTK
+Msg 4  STA -> AP  : acknowledgement, install PTK</div>
+<ul>
+  <li>The PTK depends on ANonce, SNonce, the PMK and both MAC addresses, so each session has fresh keys.</li>
+  <li>The MIC proves that each side knows the PMK without revealing it.</li>
+  <li>An eavesdropper who captures the handshake can only attack the passphrase offline, so a weak passphrase is the real weakness.</li>
+</ul>
+<p class="lbl">Design for a small office</p>
+<ul>
+  <li>WPA2 or WPA3 with CCMP or GCMP; disable WEP and TKIP.</li>
+  <li>A long unique passphrase, or 802.1X with EAP-TLS where RADIUS exists.</li>
+  <li>802.11w for protected management frames; a separate guest VLAN for visitors.</li>
+  <li>Change the router admin password, disable WPS and keep the firmware updated.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>AES-CCMP is strong and gives proper integrity.</li>
+  <li>The master key never crosses the air, and session keys change for every connection.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Passphrase-based mode is open to offline guessing if the passphrase is weak.</li>
+  <li>Unpatched devices can suffer key reinstallation attacks.</li>
+  <li>Enterprise setup is complex and needs skilled staff.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>802.11i gives WPA2 its strength through AES and a careful key hierarchy. Its real security still depends on passphrase strength and on keeping devices patched.</p>
+<div class="bank">Bank: "Mention two security features introduced in IEEE 802.11i" [4m]; "Discuss the role of the 4-way handshake in WPA2" [8m]; "In 802.11i, what is the purpose of the 4-way handshake?" [MCQ: generate and install keys]; "Evaluate the effectiveness of AES-CCMP over TKIP" [8m]; "Design a secure Wi-Fi network for a small office, incorporating 802.11i" [8m]; "Compare 802.11i and Bluetooth security architectures" [8m; see T34].</div>
+
+<p class="unit">Unit III</p>
+<h3 id="t32">T32. Authentication in wireless networks</h3>
+<p class="lbl">Definition</p>
+<p>Wireless authentication confirms that a client may join the network. The methods range from none (open) to per-user certificates.</p>
+<p class="lbl">Introduction</p>
+<p>The method chosen decides who may join, how credentials are handled and how far a compromise can spread. Each method suits a different setting, and the weakest method sets the level of the whole network.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Open authentication:</strong> the client says it wants to authenticate and the AP replies with success. It gives no security and must not be used.</li>
+  <li><strong>WPA2/WPA3-Personal (PSK or SAE):</strong> the four-way handshake, or SAE in WPA3, proves knowledge of the shared passphrase without sending it.</li>
+  <li><strong>WPA2-Enterprise:</strong> 802.1X with EAP, giving per-user credentials checked by RADIUS.</li>
+  <li><strong>Accountability:</strong> enterprise mode records which user connected; personal mode cannot tell users apart.</li>
+  <li><strong>Wi-Fi chalking:</strong> marks drawn on walls to advertise open or weakly protected networks; it shows why open authentication is dangerous.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Enterprise mode gives per-user accountability and revocation.</li>
+  <li>Personal mode is simple for homes and small offices.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Open authentication gives no protection.</li>
+  <li>Personal mode shares one passphrase among all users, so revoking one user means changing it for everyone.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Enterprise networks should use per-user authentication, and personal networks should use WPA2 or WPA3 with a strong passphrase. Open authentication has no place in a secured network.</p>
+<div class="bank">Bank: "Explain the authentication methods in wireless networks" (see T30, T31); "Which authentication method gives no security?" [short: open authentication]; Wi-Fi chalking [short, Unit III slides].</div>
+
+<p class="unit">Unit III</p>
+<h3 id="t33">T33. Layer 3 security mechanisms</h3>
+<p class="lbl">Definition</p>
+<p>Layer 3 security protects IP addressing, routing and traffic above the wireless link, using protocols and devices that control what packets may pass.</p>
+<p class="lbl">Introduction</p>
+<p>Once a Wi-Fi link is secured, packets still travel across routers and networks. Layer 3 controls decide which traffic is allowed, how routes are trusted and how packets are protected end to end.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>IPsec:</strong> AH provides integrity and authentication of packets; ESP provides confidentiality; IKE negotiates keys.</li>
+  <li><strong>Static routing:</strong> fixed routes prevent a routing table from being poisoned by fake updates.</li>
+  <li><strong>Routing authentication:</strong> HMAC on routing messages proves that updates come from a trusted router.</li>
+  <li><strong>ACLs (access control lists):</strong> filter traffic by IP address, port and protocol.</li>
+  <li><strong>Firewalls:</strong> enforce a boundary policy between networks.</li>
+  <li><strong>IDS:</strong> watches traffic and reports anomalies.</li>
+  <li><strong>Segmentation and VLANs:</strong> separate groups of users so a compromise stays local.</li>
+  <li><strong>DHCP snooping and IP source guard:</strong> stop rogue DHCP servers and forged source addresses.</li>
+  <li><strong>Port security, logging and monitoring:</strong> limit MAC addresses per port and keep records for investigation.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>IPsec protects traffic end to end across untrusted networks.</li>
+  <li>Static routes are predictable and easy to audit.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Static routes need manual upkeep and do not adapt to failures.</li>
+  <li>IPsec depends on key management; weak keys or bad policies leave gaps.</li>
+  <li>ACLs and firewalls can be bypassed by address spoofing.</li>
+  <li>IDS can miss encrypted attacks and raise false alarms.</li>
+  <li>Segmentation fails if VLAN hopping is possible.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Layer 3 mechanisms control what traffic may travel and how it is protected. Their value depends on correct configuration and on key management.</p>
+<div class="bank">Bank: "Assess the vulnerabilities associated with Layer 3 security mechanisms in wireless networks" [8m].</div>
+
+<p class="unit">Unit III</p>
+<h3 id="t34">T34. Bluetooth technology and security</h3>
+<p class="lbl">Definition</p>
+<p>Bluetooth (IEEE 802.15.1) is a short-range wireless technology in the 2.4 GHz band that uses frequency hopping over 79 channels to connect personal devices.</p>
+<p class="lbl">Introduction</p>
+<p>Bluetooth links connect phones, headsets, wearables and car systems. Its security relies on pairing, which creates a shared link key, and on the security mode the devices enforce. Because it is cheap and everywhere, it is also a frequent target.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Piconet:</strong> one master and up to seven active slaves.</li>
+  <li><strong>BR/EDR (Classic):</strong> carries audio and files. <strong>BLE:</strong> low energy, for sensors and wearables.</li>
+  <li><strong>Legacy pairing:</strong> uses a PIN, which is weak against offline guessing.</li>
+  <li><strong>Secure Simple Pairing (SSP, v2.1 onward):</strong> uses ECDH and four models: Numeric Comparison, Passkey Entry, Out-of-Band and Just Works.</li>
+  <li><strong>Authentication:</strong> challenge-response with the link key.</li>
+  <li><strong>Encryption:</strong> E0 in Classic (known weaknesses); AES-CCM in newer versions and BLE.</li>
+  <li><strong>Security modes:</strong> Mode 3 enforces security at link level, so only authenticated devices communicate; Mode 4 is service-level security with SSP.</li>
+  <li><strong>Attacks:</strong> bluejacking (unsolicited messages), bluesnarfing (unauthorised data access), bluebugging (control of phone functions), and eavesdropping or man-in-the-middle during weak pairing.</li>
+  <li><strong>Securing a device:</strong> use SSP; set non-discoverable mode; remove unused pairings; apply updates; use Mode 3 or 4; switch Bluetooth off when unused.</li>
+</ul>
+<p class="lbl">Breach case study (illustrative)</p>
+<ul>
+  <li>A device left discoverable, paired with a weak PIN and never updated, is bluesnarfed and bluejacked.</li>
+  <li>Lessons: SSP, non-discoverable mode, updates and pairing hygiene.</li>
+</ul>
+<p class="lbl">Comparison with 802.11i</p>
+<ul>
+  <li>Both use AES-based encryption and authentication for short-range links.</li>
+  <li>802.11i uses a four-way handshake and 802.1X for shared networks; Bluetooth uses pairing and link keys for personal devices.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Low power and low cost; supported by almost every phone.</li>
+  <li>SSP gives strong pairing against eavesdropping.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Short range.</li>
+  <li>Legacy pairing and E0 are weak.</li>
+  <li>Many known attacks affect older devices.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Bluetooth is secure when devices use SSP, enforce Mode 3 or 4 and stay updated. Its weak points are old pairing methods and devices left discoverable.</p>
+<div class="bank">Bank: "Explain Bluetooth technology and its security" [16m]; "Explain the basic security mechanisms employed in Bluetooth" [8m]; "Outline the steps to secure a Bluetooth-enabled device" [8m]; "Examine a case study where a Bluetooth security breach occurred" [16m]; "Compare and contrast the security architectures of 802.11i and Bluetooth" [8m]; "Purpose of pairing in Bluetooth" [MCQ: device authentication]; "Which Bluetooth mode allows only authenticated devices?" [MCQ: Security Mode 3]; "Which attack sends unauthorised messages?" [MCQ: bluejacking].</div>
+
+<p class="unit">Unit IV</p>
+<h3 id="t35">T35. WiMAX introduction, standards and Forum</h3>
+<p class="lbl">Definition</p>
+<p>WiMAX (Worldwide Interoperability for Microwave Access) is a standards-based wireless broadband technology based on the IEEE 802.16 family, offering an alternative to cable and DSL.</p>
+<p class="lbl">Introduction</p>
+<p>The WiMAX Forum, formed in June 2001, promotes conformance and interoperability, certifies products and runs training. The 802.16 standards evolved from fixed, line-of-sight links to mobile, non-line-of-sight broadband.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>802.16 (2001):</strong> 10–66 GHz, line of sight, fixed.</li>
+  <li><strong>802.16a (2003):</strong> 2–10 GHz, non-line-of-sight.</li>
+  <li><strong>802.16d / 802.16-2004:</strong> fixed WiMAX, 2–11 GHz.</li>
+  <li><strong>802.16e-2005:</strong> mobile WiMAX, under 6 GHz, with handover.</li>
+  <li><strong>802.16m-2011:</strong> WirelessMAN-Advanced, about 100 Mbit/s for mobile and 1 Gbit/s for fixed.</li>
+  <li><strong>WiMAX Forum:</strong> certifies equipment so that products from different vendors work together.</li>
+  <li><strong>WiMAX vs Wi-Fi:</strong> WiMAX covers kilometres and Wi-Fi covers a building; WiMAX has a connection-oriented MAC with per-connection QoS, while Wi-Fi uses contention-based CSMA/CA.</li>
+  <li><strong>Complementary use:</strong> operators use WiMAX to backhaul Wi-Fi hotspots.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Long range and high speed without cabling.</li>
+  <li>Standards and certification make products interoperable.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Higher frequencies need line of sight.</li>
+  <li>Spectrum licensing adds cost.</li>
+  <li>Lost ground to LTE in the mobile market.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>WiMAX offered broadband over long distances and set the stage for mobile broadband. Its security history shows why later versions added mutual authentication and AES.</p>
+<div class="bank">Bank: "Which IEEE standard is broadband wireless access, commonly WiMAX?" [MCQ: 802.16]; "Which network type does 802.16 WiMAX provide?" [MCQ: metropolitan area].</div>
+<div class="notbank">Bank: no separate question on the WiMAX Forum or the WiMAX vs Wi-Fi comparison in the uploaded banks. The answer above covers both for study.</div>
+
+<p class="unit">Unit IV</p>
+<h3 id="t36">T36. WiMAX architecture, OFDM, layers and frames</h3>
+<p class="lbl">Definition</p>
+<p>WiMAX architecture is the set of network elements and protocol layers that provide broadband access, using OFDM for the radio link and a connection-oriented MAC.</p>
+<p class="lbl">Introduction</p>
+<p>OFDM splits the channel into many narrow sub-carriers that resist multipath fading. The frame structure then carries data and bandwidth requests. Understanding the layers and frames shows where security is placed in the design.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Architecture:</strong> subscriber station, base station, Access Service Network (radio access) and Connectivity Service Network (IP, authentication, billing).</li>
+  <li><strong>OFDM:</strong> 802.16-2004 uses 256 sub-carriers; 802.16e uses scalable OFDMA, which assigns sub-carriers to users.</li>
+  <li><strong>Physical layer:</strong> transmission convergence and physical medium dependent sublayers, using QPSK, 16-QAM and 64-QAM.</li>
+  <li><strong>Data link layer:</strong> the security sublayer at the bottom, the MAC common part (scheduling and connections), and the service-specific convergence sublayer.</li>
+  <li><strong>Adaptive modulation:</strong> near subscribers use 64-QAM (6 bits per baud); medium distance uses 16-QAM (4 bits); far subscribers use QPSK (2 bits).</li>
+  <li><strong>Classes of service:</strong> constant bit rate, real-time variable bit rate, non-real-time variable bit rate and best effort.</li>
+  <li><strong>Generic frame (starts with 0):</strong> carries data, with an encryption flag, key information, length, connection ID and CRC.</li>
+  <li><strong>Bandwidth-request frame (starts with 1):</strong> has a "bytes needed" field and no payload.</li>
+  <li><strong>Security in frames:</strong> only payloads are encrypted, so addresses and connection IDs remain visible.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>OFDM is robust to multipath fading.</li>
+  <li>Adaptive modulation keeps the link working at varying distances.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Complex design with signalling overhead.</li>
+  <li>Headers remain visible, which leaks some traffic information.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>The WiMAX architecture trades complexity for robust, efficient radio. Its security is placed in the MAC sublayer, which protects payloads but not headers.</p>
+<div class="notbank">Bank: no question in the uploaded banks is worded on the WiMAX architecture, OFDM, layers or frames directly. Answered here for study.</div>
+
+<p class="unit">Unit IV</p>
+<h3 id="t37">T37. WiMAX security architecture and PKM</h3>
+<p class="lbl">Definition</p>
+<p>WiMAX security architecture protects traffic and control messages in the MAC security sublayer. Privacy and Key Management (PKM) authenticates subscribers and distributes the keys that protect their traffic.</p>
+<p class="lbl">Introduction</p>
+<p>Security associations hold the shared parameters for each connection, and PKM manages the keys that protect the traffic. The protocol version decides how strong the authentication is.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Security association (SA):</strong> holds the SAID, cryptographic suite, traffic encryption keys (TEKs) and initialisation vectors.</li>
+  <li><strong>PKM:</strong> authenticates the subscriber and manages keys, using X.509 certificates, RSA and AES.</li>
+  <li><strong>PKMv1:</strong> one-way; the base station authenticates the subscriber, not the reverse, so man-in-the-middle attacks are possible.</li>
+  <li><strong>PKMv2 (802.16e):</strong> Privacy Key Management version 2, which provides two-way authentication.</li>
+  <li><strong>RSA-based authentication:</strong> the manufacturer's X.509 certificate lets the base station encrypt an Authorisation Key (AK) for the subscriber.</li>
+  <li><strong>EAP-based authentication:</strong> uses a certificate, SIM/USIM or username and password.</li>
+  <li><strong>Authorisation:</strong> the base station checks the request with the AAA server, then returns the AK (encrypted), its lifetime and a SAID.</li>
+  <li><strong>Data privacy:</strong> AES in CCM, CBC, CTR, ECB or Key Wrap modes, since DES is no longer considered secure.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>PKMv2 gives mutual authentication.</li>
+  <li>AES modes give strong confidentiality.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>PKMv1 is one-way and weak against impersonation.</li>
+  <li>Certificate management adds cost and overhead.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>WiMAX security depends on PKM. PKMv2 with EAP and AES gives a much stronger design than PKMv1 with RSA and DES.</p>
+<div class="bank">Bank: "What does PKMv2 stand for in WiMAX?" [MCQ: Privacy Key Management version 2]; "Difference between PKMv1 and PKMv2?" [MCQ: PKMv2 supports mutual authentication]; "How is key management performed in WiMAX?" [8m]; "Explain the authentication process in WiMAX with PKMv2" [8m]; "Explain the WiMAX security architecture" [short].</div>
+
+<p class="unit">Unit IV</p>
+<h3 id="t38">T38. WiMAX security risks (802.16-2004) and 802.16e</h3>
+<p class="lbl">Definition</p>
+<p>The security risks of 802.16-2004 are the weaknesses of fixed WiMAX. The 802.16e-2005 improvements are the fixes added for mobile WiMAX.</p>
+<p class="lbl">Introduction</p>
+<p>Fixed WiMAX used weak ciphers and one-way authentication. Mobile WiMAX (802.16e) replaces them with stronger, mutual protections and adds secure handover, which is essential for a moving user.</p>
+<p class="lbl">Key points (802.16-2004 risks)</p>
+<ul>
+  <li><strong>Weak encryption:</strong> DES with 56-bit keys.</li>
+  <li><strong>One-way authentication in PKMv1:</strong> a rogue base station can impersonate a real one.</li>
+  <li><strong>No mutual authentication:</strong> subscribers may send credentials to a fake station.</li>
+  <li><strong>Replay exposure:</strong> some management messages lack replay protection, allowing forgery and session hijacking.</li>
+  <li><strong>Unprotected control fields:</strong> some QoS and bandwidth-request fields are not integrity-protected.</li>
+  <li><strong>Limited DoS protection:</strong> fake bandwidth requests and repeated re-authentication overload the base station.</li>
+  <li><strong>No handover security:</strong> moving between base stations was not protected.</li>
+</ul>
+<p class="lbl">Key points (802.16e-2005 improvements)</p>
+<ul>
+  <li><strong>AES-CCM encryption</strong> replaces DES.</li>
+  <li><strong>PKMv2</strong> with mutual EAP-based authentication.</li>
+  <li><strong>AES-CMAC</strong> for control-message integrity and replay protection.</li>
+  <li><strong>Handover security</strong> for soft and hard handover; sleep and idle modes; mobility up to about 120 km/h.</li>
+</ul>
+<p class="lbl">Design: secure WiMAX e-Governance protocol</p>
+<ul>
+  <li>PKMv2 with EAP-TLS and X.509 certificates for citizens and officers.</li>
+  <li>AES-CCM for traffic and AES-CMAC for control messages.</li>
+  <li>Certificate revocation checks; AAA logging of each access.</li>
+  <li>TLS at the application layer for citizen data, so the service is protected beyond the radio.</li>
+</ul>
+<p class="lbl">Improving key distribution without more overhead</p>
+<ul>
+  <li>Cache keys for fast re-authentication after handover.</li>
+  <li>Derive keys hierarchically from one authentication run.</li>
+  <li>Batch certificate checks and reuse session keys within their lifetime.</li>
+</ul>
+<p class="lbl">Advantages (of 802.16e)</p>
+<ul>
+  <li>Mutual authentication and AES encryption.</li>
+  <li>Secure handover for mobile users.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Legacy devices still use DES.</li>
+  <li>Some DoS exposure remains.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>The move from 802.16-2004 to 802.16e fixed the main cryptographic and authentication flaws. Operators must still disable legacy modes to get the benefit.</p>
+<div class="bank">Bank: "Explain the security risks in WiMAX / IEEE 802.16-2004" [8m]; "Which is the most critical weakness of WiMAX security compared to LTE?" [MCQ: lack of mutual authentication in earlier versions]; "Design a secure protocol for a WiMAX-based e-Governance application" [15m]; "Propose a solution to enhance key distribution in WiMAX without increasing overhead" [15m].</div>
+
+<p class="unit">Unit IV</p>
+<h3 id="t39">T39. GSM, UMTS and GPRS summary</h3>
+<p class="lbl">Definition</p>
+<p>GSM, GPRS and UMTS are successive cellular security architectures, each adding protections to the one before.</p>
+<p class="lbl">Introduction</p>
+<p>A comparison table makes the progression clear. It shows how authentication, encryption and integrity improved from GSM to UMTS, and where each generation still has gaps.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>GSM:</strong> one-way authentication with A3 and A8; weak A5 encryption; no integrity.</li>
+  <li><strong>GPRS:</strong> inherits GSM; adds GEA ciphers; no encryption on the SGSN–GGSN link.</li>
+  <li><strong>UMTS:</strong> mutual AKA authentication, UEA1/UEA2 encryption, UIA1/UIA2 integrity.</li>
+  <li><strong>Comparison:</strong> mutual authentication No, No, Yes; encryption weak, weak, strong; integrity No, No, Yes (in the order GSM, GPRS, UMTS).</li>
+  <li><strong>Known attacks:</strong> IMSI catchers and rogue base stations (GSM); eavesdropping in the packet core (GPRS); UMTS is harder to break but allows downgrade.</li>
+</ul>
+<p class="lbl">Advantages (of UMTS over GSM and GPRS)</p>
+<ul>
+  <li>Mutual authentication and integrity protection.</li>
+  <li>Stronger encryption.</li>
+</ul>
+<p class="lbl">Disadvantages (of GSM and GPRS)</p>
+<ul>
+  <li>One-way authentication and weak ciphers.</li>
+  <li>No integrity on signalling.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Each generation closed gaps left by the previous one, and UMTS is the first with mutual authentication and integrity. Its fallback to GSM is still a risk.</p>
+<div class="bank">Bank: "Explain the security in GSM, UMTS and GPRS" (see T14–T16); "Compare the security architectures of GSM, GPRS and UMTS" (see T14–T16).</div>
+
+<p class="unit">Unit IV</p>
+<h3 id="t40">T40. VoIP security</h3>
+<p class="lbl">Definition</p>
+<p>VoIP (Voice over IP) carries voice as data packets over IP networks. Its security protects the signalling that sets up calls and the media that carries the voice.</p>
+<p class="lbl">Introduction</p>
+<p>SIP handles signalling, meaning setting up, changing and ending calls. RTP carries the audio. Attackers can target either one, and they can also abuse the service for fraud, so VoIP needs protection at each point.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Eavesdropping:</strong> unencrypted RTP media can be captured and played back.</li>
+  <li><strong>Man-in-the-middle:</strong> an attacker on the signalling path can change call setup.</li>
+  <li><strong>SIP spoofing:</strong> a forged SIP message can hijack or redirect a call.</li>
+  <li><strong>DoS on the SIP server:</strong> floods of registrations or calls exhaust the service.</li>
+  <li><strong>Toll fraud:</strong> attackers make expensive calls through a compromised account.</li>
+  <li><strong>SPIT:</strong> spam over Internet telephony, unwanted automated calls.</li>
+  <li><strong>SIP digest authentication or certificates:</strong> prove the identity of users and servers.</li>
+  <li><strong>SIP over TLS:</strong> encrypts and authenticates signalling.</li>
+  <li><strong>SRTP:</strong> encrypts and authenticates the media.</li>
+  <li><strong>STUN and TURN:</strong> handle NAT traversal; these must be secured too.</li>
+  <li><strong>Firewalls with IDS/IPS:</strong> filter and monitor SIP and RTP traffic.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Cheap and flexible calls over existing IP networks.</li>
+  <li>Encryption with SRTP and TLS is available.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Many deployments leave media unencrypted by default.</li>
+  <li>Toll fraud and spam are common and costly.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>VoIP inherits both the convenience and the risks of IP. Secure signalling, encrypted media and monitoring make it safe.</p>
+<div class="bank">Bank: "Explain VoIP security and its threats" [8m] (Unit IV bank).</div>
+
+<p class="unit">Unit IV</p>
+<h3 id="t41">T41. LTE security</h3>
+<p class="lbl">Definition</p>
+<p>LTE security is the set of mechanisms in 4G networks that provide mutual authentication, a key hierarchy, encryption and integrity for the UE, eNodeB and core network.</p>
+<p class="lbl">Introduction</p>
+<p>LTE was designed with security as a core requirement. It uses EPS-AKA for mutual authentication and a key hierarchy that separates keys for signalling and for user data. It still has known weaknesses, especially in its fallback and in the interconnects.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Architecture:</strong> UE and eNodeB; the Evolved Packet Core contains the MME (mobility and signalling security), HSS (subscriber data and keys), S-GW and P-GW (user data).</li>
+  <li><strong>EPS-AKA:</strong> the HSS and USIM share the long-term key K; both prove knowledge of K, so the authentication is mutual; the result is K<sub>ASME</sub>, passed to the MME.</li>
+  <li><strong>Key hierarchy:</strong> the MME derives NAS keys for signalling; the eNodeB derives K<sub>eNB</sub> for user data, which changes at handover; AS keys come from K<sub>eNB</sub>.</li>
+  <li><strong>Encryption algorithms:</strong> EEA0 (null), EEA1 (SNOW 3G), EEA2 (AES), EEA3 (ZUC).</li>
+  <li><strong>Integrity algorithms:</strong> EIA1 (SNOW 3G), EIA2 (AES), EIA3 (ZUC).</li>
+  <li><strong>PDCP:</strong> applies the keys to user data; sequence numbers prevent replay.</li>
+  <li><strong>Vulnerabilities:</strong> IMSI catchers and downgrade attacks to 2G or 3G; null encryption (EEA0) if the UE does not reject it; SS7 and Diameter roaming links allow tracking; jamming.</li>
+  <li><strong>Mitigation:</strong> temporary identities (GUTI) so the IMSI is rarely sent; reject null ciphers and 2G downgrades; integrity-protected signalling; firewall the SS7 and Diameter interconnects.</li>
+  <li><strong>Crypto choice:</strong> AES with hardware support is fast; SNOW 3G and ZUC run well in software; null encryption is the fastest but gives no confidentiality.</li>
+  <li><strong>LTE vs WiMAX:</strong> LTE has mutual authentication from the start and a key hierarchy; WiMAX 2004 had one-way authentication.</li>
+  <li><strong>Hybrid WiMAX–LTE design:</strong> one identity and key management (common AAA and EAP); secure handover with 802.21; AES on both; avoid PKMv1 and A5; keep key hierarchies separate so keys are not reused.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Mutual authentication and AES-based protection.</li>
+  <li>The key hierarchy limits damage from one key leak.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>IMSI catching and downgrade attacks remain.</li>
+  <li>SS7 and Diameter interconnects are weak points.</li>
+  <li>The null cipher option must be blocked on every device.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>LTE is much stronger than GSM and 3G because of mutual authentication and its key hierarchy. Its remaining risks lie in the fallback to older networks and in signalling between operators.</p>
+<div class="bank">Bank: primary encryption in LTE [MCQ: AES]; which network has the HSS [MCQ: LTE]; purpose of mutual authentication in LTE [MCQ]; EPS-AKA is used for [MCQ: authentication]; attach-process integrity-protected message [MCQ: verify with integrity key]; ciphering key KeNB during handover [MCQ]; which component detects replay in security setup [MCQ: MME, see Part C note]; "Explain how the KASME key is derived in LTE" [8m]; "Analyse the role of SNOW 3G and AES in LTE" [8m]; "Explain the LTE attach procedure and its security steps" [8m]; "Why is mutual authentication important in LTE and how is it achieved?" [8m]; "Evaluate the effectiveness of LTE in preventing MITM" [15m]; "Critically assess LTE vulnerability to IMSI catching and countermeasures" [15m]; "Evaluate the impact of cryptographic choices on LTE performance and security" [15m]; "Create a security framework combining LTE and WiMAX for a hybrid network" [15m]; "Compare the security architectures of WiMAX and LTE" [8m].</div>
+
+<p class="unit">Unit V</p>
+<h3 id="t42">T42. Security policy</h3>
+<p class="lbl">Definition</p>
+<p>A security policy is a set of rules that decide who may access what and which actions are allowed, to protect downloadable applications across their lifecycle.</p>
+<p class="lbl">Introduction</p>
+<p>Downloadable apps reach devices from many sources, so the rules must cover download, install, run and update. A clear written policy gives developers, users and administrators the same expectations.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Subjects:</strong> the users, processes or apps that request access.</li>
+  <li><strong>Objects:</strong> files, memory, network connections and device features such as camera or contacts.</li>
+  <li><strong>Rights:</strong> read, write, execute and connect.</li>
+  <li><strong>Rules:</strong> link subjects, objects and rights, and define when access is allowed.</li>
+  <li><strong>Discretionary vs mandatory policy:</strong> discretionary policy lets owners grant access; mandatory policy is set centrally and cannot be overridden by users.</li>
+  <li><strong>Secure coding:</strong> input validation, error handling and threat modelling.</li>
+  <li><strong>Vulnerability management:</strong> scan, prioritise and fix; define patch timelines.</li>
+  <li><strong>Access control:</strong> multi-factor authentication and role-based rules.</li>
+  <li><strong>Data protection:</strong> encryption at rest and in transit, and data classification.</li>
+  <li><strong>Testing and auditing:</strong> regular reviews and independent checks.</li>
+  <li><strong>Developer policy document:</strong> data classification; storage and encryption rules; permission rules; approval of third-party libraries; testing before release; vulnerability reporting; privacy notices and consent; incident reporting.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Consistent rules across apps and teams.</li>
+  <li>A clear basis for audits and compliance.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Needs regular maintenance as threats change.</li>
+  <li>Overly strict rules push staff to find workarounds.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>A good policy is specific enough to enforce and flexible enough to keep up with new threats. It is the foundation for every later control in the lifecycle.</p>
+<div class="bank">Bank: "Explain the key aspects of a security policy for downloadable apps" [short]; "Create a policy document for app developers that addresses data security and privacy" [15m]; "Explain the meaning of a security policy" [short].</div>
+
+<p class="unit">Unit V</p>
+<h3 id="t43">T43. Implementing a security policy and developer checklist</h3>
+<p class="lbl">Definition</p>
+<p>Implementing a security policy means turning its rules into steps, controls and checks across the app lifecycle, from download to retirement.</p>
+<p class="lbl">Introduction</p>
+<p>Implementation follows an order, and each step should produce something that can be checked. The same order also works as a developer checklist for an Android app.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Step 1, objectives and scope:</strong> decide what the app protects and what is out of scope.</li>
+  <li><strong>Step 2, risk assessment:</strong> rank threats by likelihood and impact.</li>
+  <li><strong>Step 3, secure the download:</strong> use official stores or HTTPS; verify signatures and checksums.</li>
+  <li><strong>Step 4, secure installation and use:</strong> request only needed permissions; store data securely; enforce authentication.</li>
+  <li><strong>Step 5, monitor and audit:</strong> log events, train users and review access.</li>
+  <li><strong>Step 6, incident response:</strong> plan and test how to react to a compromise.</li>
+  <li><strong>Step 7, data protection law:</strong> meet the rules that apply to personal data.</li>
+  <li><strong>Enforcement:</strong> access control lists, capabilities or mandatory access control (for example SELinux).</li>
+</ul>
+<p class="lbl">Developer checklist (Android)</p>
+<ul>
+  <li>Threat model before coding; least-privilege permissions.</li>
+  <li>Keystore encryption; TLS with pinning; no secrets in code or logs.</li>
+  <li>Validate all input; restrict exported components; obfuscate with R8 or ProGuard.</li>
+  <li>Static and dynamic analysis (for example MobSF and Frida) before release; sign builds.</li>
+  <li>A secure update path; a privacy policy that matches the data actually collected.</li>
+</ul>
+<p class="lbl">Secure development lifecycle</p>
+<ul>
+  <li>Threat modelling at design; secure coding and review during development.</li>
+  <li>Static and dynamic testing; signed release.</li>
+  <li>Monitoring and patching after release.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Systematic and catches problems early.</li>
+  <li>Each step can be audited.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Costs time and money.</li>
+  <li>Can slow releases if applied rigidly.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Implementation turns policy into practice. The checklist and the lifecycle make security a routine part of building an app rather than an afterthought.</p>
+<div class="bank">Bank: "Design a security checklist for an Android developer to secure a downloadable application" [15m]; "Discuss the steps involved in securing a mobile app during development" [8m]; "Apply the principle of least privilege to improve app permission design" [8m]; "Explain how security policy is implemented" [8m]; "Discuss the lifecycle of an Android app and how to embed security at each stage" [16m].</div>
+
+<p class="unit">Unit V</p>
+<h3 id="t44">T44. Execution environments and sandboxing</h3>
+<p class="lbl">Definition</p>
+<p>An execution environment is the context in which active content (applets, scripts, controls and app code) runs. Sandboxing isolates that content so that a flaw does not reach the rest of the system.</p>
+<p class="lbl">Introduction</p>
+<p>Environments differ in how strongly they isolate code, from the Java sandbox and browser rules to OS sandboxes and hardware-isolated TEEs. The stronger the isolation, the less damage a compromised app can do.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Java sandbox:</strong> the class loader, bytecode verifier and security manager restrict file, network and system access.</li>
+  <li><strong>JavaScript in browsers:</strong> the same-origin policy stops a page from reading another site's data; Content Security Policy limits which resources can load.</li>
+  <li><strong>ActiveX:</strong> signed controls with no sandbox, so trust in the signer is the only protection.</li>
+  <li><strong>Mobile apps:</strong> each app runs in its own OS sandbox with its own UID.</li>
+  <li><strong>TEE (trusted execution environment):</strong> a hardware-isolated area for sensitive code and keys, such as ARM TrustZone; secure enclaves are similar.</li>
+  <li><strong>Rich execution environment (REE):</strong> the normal operating system, which has the larger attack surface.</li>
+  <li><strong>Least privilege:</strong> an app receives only the permissions it needs.</li>
+  <li><strong>Combined effect:</strong> sandboxing and least privilege together cap the damage a compromised app can do.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Contains damage from a flawed or malicious app.</li>
+  <li>TEEs protect keys even if the main OS is compromised.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Sandboxes can be escaped through unpatched flaws.</li>
+  <li>Strict isolation limits usability and performance.</li>
+  <li>ActiveX has no sandbox at all.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Sandboxing is the main way modern platforms limit damage. Its strength depends on how isolated the environment is and on the least privilege given to each piece of code.</p>
+<div class="bank">Bank: "What is the purpose of app sandboxing?" [MCQ: isolate app behaviour]; "What is sandboxing in application security?" [2m]; "Why is sandboxing important?" [short]; "Define the principle of least privilege" [2m]; "What is the purpose of application sandboxing?" [MCQ: isolate from critical system functions].</div>
+
+<p class="unit">Unit V</p>
+<h3 id="t45">T45. Validation of active content</h3>
+<p class="lbl">Definition</p>
+<p>Validation of active content checks that downloaded code is authentic, unchanged and safe before or while it runs.</p>
+<p class="lbl">Introduction</p>
+<p>Validation combines three checks: signing (who wrote the code), static analysis (what the code contains) and dynamic analysis (what the code does). Each check catches different problems, so they are used together.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Code signing:</strong> a digital signature proves who wrote the code and that it was not changed afterwards. Certificates follow the X.509 standard.</li>
+  <li><strong>Bytecode verification:</strong> checks that code follows the language's safety rules before it runs.</li>
+  <li><strong>Static analysis:</strong> reviews code without running it, looking for unsafe calls, hard-coded secrets and insecure patterns.</li>
+  <li><strong>Dynamic analysis:</strong> runs the code in a monitored environment and observes its behaviour, catching runtime problems static analysis misses.</li>
+  <li><strong>Input sanitisation and safe JavaScript:</strong> avoid eval, use strict mode and validate all input.</li>
+  <li><strong>Dependency checks:</strong> software composition analysis and an SBOM (software bill of materials) find vulnerable libraries.</li>
+  <li><strong>SSL pinning:</strong> limits trust to a known certificate or key (see T20).</li>
+  <li><strong>Safe source:</strong> official app stores are the safest place to get apps.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Catches tampered and unsafe code before users are harmed.</li>
+  <li>Static and dynamic checks complement each other.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Static analysis gives false positives that need manual review.</li>
+  <li>Dynamic analysis only covers the paths it actually runs.</li>
+  <li>Code signing proves the source, not that the code is safe.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>Validation gives confidence that code is authentic and behaves as expected. It works best as a combination of signing, static and dynamic checks.</p>
+<div class="bank">Bank: "Define code signing" [2m]; "Explain how code signing works and why it prevents tampered apps" [8m]; "What is the difference between static and dynamic app analysis?" [2m]; "Describe how dynamic analysis helps detect runtime vulnerabilities" [8m]; "What is the standard used for mobile app code signing?" [MCQ: X.509]; "Which tool is used for dynamic analysis?" [MCQ: Frida, see T20]; "Which is the safest place to download mobile apps?" [MCQ: official app stores]; "What is code signing used for?" [MCQ: verify integrity and authenticity].</div>
+
+<p class="unit">Unit V</p>
+<h3 id="t46">T46. Detection of attacks on downloadable apps</h3>
+<p class="lbl">Definition</p>
+<p>Attack detection on downloadable apps is the monitoring of app and device behaviour to spot malicious activity, followed by a response to it.</p>
+<p class="lbl">Introduction</p>
+<p>Detection methods differ in what they know: known signatures, learned normal behaviour, or defined rules. Each method has a different balance between catching new attacks and raising false alarms.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Signature-based:</strong> matches known malware patterns; accurate for known threats, but misses new ones.</li>
+  <li><strong>Anomaly-based:</strong> learns normal behaviour and flags deviations; finds new attacks but gives more false alarms.</li>
+  <li><strong>Specification-based:</strong> checks behaviour against defined rules; few false alarms, but the rules are hard to write.</li>
+  <li><strong>HIDS (host-based):</strong> monitors one device or app.</li>
+  <li><strong>NIDS (network-based):</strong> monitors network traffic; cannot read encrypted content.</li>
+  <li><strong>Step 1, collect data:</strong> system calls, permissions used, connections made, log spikes.</li>
+  <li><strong>Step 2, compare:</strong> against signatures or the normal profile.</li>
+  <li><strong>Step 3, decide:</strong> whether the behaviour is an attack.</li>
+  <li><strong>Step 4, respond:</strong> alert, block, quarantine or remove the app.</li>
+  <li><strong>Step 5, learn:</strong> update signatures and feed the findings into incident response.</li>
+  <li><strong>Tools:</strong> IDS and IPS, SIEM for logs, SAST and DAST for testing, RASP at runtime.</li>
+  <li><strong>Sideloading risk:</strong> no store vetting, unknown publisher, malware that bypasses updates, and no revocation. Mitigate by disabling unknown sources, allowing only trusted stores and using MDM.</li>
+</ul>
+<p class="lbl">Advantages</p>
+<ul>
+  <li>Signature detection is fast and accurate for known threats.</li>
+  <li>Anomaly detection can catch new attacks.</li>
+</ul>
+<p class="lbl">Disadvantages</p>
+<ul>
+  <li>Signatures miss new malware.</li>
+  <li>Anomaly detection raises false alarms.</li>
+  <li>Network-based detection cannot see encrypted content.</li>
+</ul>
+<p class="lbl">Conclusion</p>
+<p>No single method is enough. Combining signature and anomaly detection, with host and network monitoring, gives the best coverage for downloadable apps.</p>
+<div class="bank">Bank: "Explain how an app can be validated and how attacks are detected" [16m]; "Analyse the risks of sideloading applications on mobile devices" [8m]; "Propose a framework to detect and prevent malicious downloadable apps in an enterprise" [15m; see Part B]; "Which approach mitigates malicious apps?" [MCQ]; "Which app is a Trojan?" [MCQ, see T21].</div>
+
+<!-- ================= PART B ================= -->
+<h2 id="partb">Part B – Bank questions outside the syllabus</h2>
+<p>These questions appear in the banks but are not directly in the syllabus. Each has a best answer.</p>
+
+<h3>B1. Analyse the impact of default passwords on Wi-Fi routers (8 marks)</h3>
+<p class="lbl">Definition</p>
+<p>Default router passwords are factory credentials that are never changed, so anyone who knows them can control the router.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li>Default passwords are printed on labels or published in online lists.</li>
+  <li>An attacker can take admin control, change DNS settings to redirect traffic, or join the network without a passphrase.</li>
+  <li>Impact: full control of the network, which exposes every device on it.</li>
+  <li><strong>Mitigation:</strong> change the admin password at setup; set a unique Wi-Fi passphrase; disable WPS; update firmware; disable remote administration unless needed.</li>
+</ul>
+<p class="lbl">Advantages / Disadvantages</p>
+<ul><li>Advantage of changing defaults: removes the easiest attack.</li><li>Disadvantage: users forget custom passwords, so a reset may be needed.</li></ul>
+
+<h3>B2. Explain the SS7 attack (MCQ and short)</h3>
+<p class="lbl">Definition</p>
+<p>SS7 is the signalling system that connects operator networks. An SS7 attack abuses the trust that operators place in each other's messages.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li>The trust model assumes other operators' messages are genuine.</li>
+  <li>An attacker with SS7 access can request a subscriber's location, intercept calls and SMS, or divert messages.</li>
+  <li><strong>Defence:</strong> operators filter SS7 messages at their borders; block requests from unexpected origins; use Diameter-based and encrypted interconnects where possible.</li>
+</ul>
+<p class="lbl">Advantages / Disadvantages</p>
+<ul><li>Advantage of defence: stops many tracking attacks.</li><li>Disadvantage: SS7 is old, so full fixes are slow and costly.</li></ul>
+
+<h3>B3. Secure development lifecycle (16-mark case)</h3>
+<p class="lbl">Definition</p>
+<p>A secure development lifecycle (SDL) builds security into every phase of app creation.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>Design:</strong> threat modelling and least-privilege design.</li>
+  <li><strong>Development:</strong> secure coding, input validation, Keystore use and no secrets in code.</li>
+  <li><strong>Testing:</strong> static analysis, dynamic analysis, penetration testing and dependency checks.</li>
+  <li><strong>Release:</strong> signed builds and a security review gate.</li>
+  <li><strong>Operations:</strong> monitoring, patching, incident response and a vulnerability-reporting channel.</li>
+  <li>Each phase has a clear output, so security is checked before the next phase starts.</li>
+</ul>
+<p class="lbl">Advantages / Disadvantages</p>
+<ul><li>Advantage: finds flaws early and cheaply.</li><li>Disadvantage: adds time and needs trained staff.</li></ul>
+
+<h3>B4. BYOD and mobile device management</h3>
+<p class="lbl">Definition</p>
+<p>BYOD (Bring Your Own Device) lets staff use personal phones on company networks. MDM (Mobile Device Management) enforces policy on those devices.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li>MDM enforces passcodes, encryption, approved apps, remote wipe and access control.</li>
+  <li>Containers separate work data from personal data on the same device.</li>
+  <li>Trade-off: employee privacy against company control.</li>
+</ul>
+<p class="lbl">Advantages / Disadvantages</p>
+<ul><li>Advantage: lower device cost for the company; staff productivity.</li><li>Disadvantage: mixes personal and corporate data; limited company control.</li></ul>
+
+<h3>B5. Smishing and phishing</h3>
+<p class="lbl">Definition</p>
+<p>Phishing uses fake email to steal credentials. Smishing uses fake SMS messages for the same purpose.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li>Both create urgency (for example "your account is locked") and link to a fake login page.</li>
+  <li><strong>Defence:</strong> check the sender; do not click links in unexpected messages; use two-factor authentication; report the message.</li>
+</ul>
+<p class="lbl">Advantages / Disadvantages</p>
+<ul><li>Advantage of awareness training: lowers click rates.</li><li>Disadvantage: attacks keep changing, so training must repeat.</li></ul>
+
+<h3>B6. Mobile security tools (APKTool, MobSF, Frida, ProGuard)</h3>
+<p class="lbl">Definition</p>
+<p>These are tools used to analyse and protect Android apps.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li><strong>APKTool:</strong> decompiles and rebuilds APKs for review.</li>
+  <li><strong>MobSF:</strong> an automated static and dynamic analysis framework.</li>
+  <li><strong>Frida:</strong> hooks running code to observe runtime behaviour.</li>
+  <li><strong>ProGuard:</strong> shrinks and obfuscates Java code, making reverse engineering harder.</li>
+  <li>Use the first three only on apps you are authorised to examine; use ProGuard to protect your own release builds.</li>
+</ul>
+<p class="lbl">Advantages / Disadvantages</p>
+<ul><li>Advantage: flaws are found before release.</li><li>Disadvantage: the same tools can be misused by attackers.</li></ul>
+
+<h3>B7. Google Play Protect and mobile threat defence</h3>
+<p class="lbl">Definition</p>
+<p>Google Play Protect scans apps for malware. Mobile threat defence (MTD) products extend this protection in enterprises.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li>Play Protect scans apps on the device and in the Play Store and warns about risky apps.</li>
+  <li>MTD adds network monitoring and remote actions for managed devices.</li>
+  <li>Limit: strong on known threats and behaviour patterns, but cannot stop every new attack.</li>
+</ul>
+<p class="lbl">Advantages / Disadvantages</p>
+<ul><li>Advantage: automatic, built in and low effort.</li><li>Disadvantage: detection lags new malware.</li></ul>
+
+<h3>B8. VPN and its purpose</h3>
+<p class="lbl">Definition</p>
+<p>A VPN (virtual private network) creates an encrypted tunnel from the device to a trusted endpoint.</p>
+<p class="lbl">Key points</p>
+<ul>
+  <li>Traffic on an untrusted network, such as public Wi-Fi, cannot be read or altered on the way.</li>
+  <li>Protects confidentiality and integrity in transit.</li>
+  <li>Protects only the tunnel; the endpoint and the app still need their own protection.</li>
+</ul>
+<p class="lbl">Advantages / Disadvantages</p>
+<ul><li>Advantage: safe use of public Wi-Fi.</li><li>Disadvantage: the VPN provider or endpoint must be trusted; adds some latency.</li></ul>
+
+<!-- ================= PART C ================= -->
+<h2 id="partc">Part C – Multiple-choice answer key</h2>
+<p>These are the MCQs from the banks with their answers. Each is linked to its topic.</p>
+<table>
+  <tr><th>Question (short)</th><th>Answer</th><th>Topic</th></tr>
+  <tr><td>Primary characteristic of 1G</td><td>B: analog voice</td><td>T2</td></tr>
+  <tr><td>What 2G added over 1G</td><td>B: digital voice and SMS</td><td>T2</td></tr>
+  <tr><td>Standard for WLAN</td><td>C: 802.11</td><td>T3</td></tr>
+  <tr><td>Standard for PAN</td><td>B: 802.15</td><td>T3</td></tr>
+  <tr><td>Eavesdropping on wireless</td><td>C: open-air transmission</td><td>T7</td></tr>
+  <tr><td>Primary security requirement for mobile</td><td>C: secure handover</td><td>T8</td></tr>
+  <tr><td>Advantage of application-level security</td><td>B: independence from network security</td><td>T9</td></tr>
+  <tr><td>Disadvantage of application-level security</td><td>C: inconsistent implementation</td><td>T9</td></tr>
+  <tr><td>Which standard is WiMAX</td><td>C: 802.16</td><td>T35</td></tr>
+  <tr><td>802.20 developed for</td><td>C: vehicular high-speed mobility</td><td>T3</td></tr>
+  <tr><td>802.21 is</td><td>B: Media Independent Handover</td><td>T3</td></tr>
+  <tr><td>SS7 attack targets</td><td>C: signalling system</td><td>T6</td></tr>
+  <tr><td>DoS defence in mobile</td><td>C: rate limiting and anomaly detection</td><td>T6, T26</td></tr>
+  <tr><td>Layer most vulnerable</td><td>A: application layer</td><td>T9</td></tr>
+  <tr><td>Primary purpose of incident response</td><td>B: respond to and manage breaches</td><td>T13</td></tr>
+  <tr><td>A5/1 provides</td><td>B: voice encryption</td><td>T14</td></tr>
+  <tr><td>USIM main function</td><td>B: user authentication</td><td>T16</td></tr>
+  <tr><td>Android permission model enhances security by</td><td>B: isolating apps and controlling access</td><td>T17</td></tr>
+  <tr><td>Android security component</td><td>A: Linux kernel</td><td>T17</td></tr>
+  <tr><td>Secure protocol primary goal</td><td>B: authentication</td><td>T10</td></tr>
+  <tr><td>Protocol for secure web transmission</td><td>C: HTTPS</td><td>T10</td></tr>
+  <tr><td>Protocol for app communication security</td><td>C: TLS/SSL</td><td>T10</td></tr>
+  <tr><td>Rooted device risk</td><td>C: increased vulnerability to malware</td><td>T19</td></tr>
+  <tr><td>Malicious app sign</td><td>B: unnecessary permission requests</td><td>T21</td></tr>
+  <tr><td>Trojan app</td><td>B: functions normally while hiding malicious code</td><td>T21</td></tr>
+  <tr><td>Permission over-requesting concern</td><td>D: may expose sensitive data</td><td>T21</td></tr>
+  <tr><td>Unit II sideloading</td><td>C: installing from unofficial sources</td><td>T21</td></tr>
+  <tr><td>SSL pinning enhances security by</td><td>C: detecting fake servers</td><td>T20</td></tr>
+  <tr><td>Dynamic analysis tool</td><td>C: Frida</td><td>T20, T45</td></tr>
+  <tr><td>Purpose of app sandboxing</td><td>B: isolate app behaviour</td><td>T44</td></tr>
+  <tr><td>Standard for app code signing</td><td>C: X.509</td><td>T45</td></tr>
+  <tr><td>Code signing used for</td><td>C: verify integrity and authenticity</td><td>T45</td></tr>
+  <tr><td>Safest place to download apps</td><td>C: official app stores</td><td>T45</td></tr>
+  <tr><td>Data sent unencrypted: fix</td><td>C: update to encrypted version</td><td>T23</td></tr>
+  <tr><td>Mobile user on public Wi-Fi: VPN</td><td>B: secure communication</td><td>T10</td></tr>
+  <tr><td>Which encryption protocol is defined in 802.11i</td><td>C: AES-CCMP</td><td>T29, T31</td></tr>
+  <tr><td>Network authentication function of 802.1X</td><td>B: network authentication</td><td>T30</td></tr>
+  <tr><td>Active or passive: intercept without altering</td><td>B: passive</td><td>T25</td></tr>
+  <tr><td>Main WEP vulnerability</td><td>C: susceptible to key cracking</td><td>T29</td></tr>
+  <tr><td>Bluetooth pairing purpose</td><td>B: device authentication</td><td>T34</td></tr>
+  <tr><td>DoS characteristic</td><td>C: disruption of network services</td><td>T26</td></tr>
+  <tr><td>Port-based network access protocol</td><td>A: EAP (see note)</td><td>T30</td></tr>
+  <tr><td>Default WPA2 algorithm</td><td>C: AES-CCMP</td><td>T29</td></tr>
+  <tr><td>OSI layer of 802.11</td><td>B: data link</td><td>T4</td></tr>
+  <tr><td>Bluetooth mode: only authenticated devices</td><td>D: Security Mode 3</td><td>T34</td></tr>
+  <tr><td>Bluejacking</td><td>B: unsolicited messages</td><td>T34</td></tr>
+  <tr><td>Dictionary attack</td><td>B: trying words to guess a password</td><td>T28</td></tr>
+  <tr><td>Defence against Wi-Fi DoS</td><td>A: MAC filtering (see note)</td><td>T26, T29</td></tr>
+  <tr><td>Strengthen 802.11x</td><td>B: 802.1X with EAP-TLS</td><td>T30</td></tr>
+  <tr><td>4-way handshake purpose</td><td>C: generate and install keys</td><td>T31</td></tr>
+  <tr><td>LTE primary encryption</td><td>B: AES</td><td>T41</td></tr>
+  <tr><td>HSS belongs to</td><td>D: LTE</td><td>T41</td></tr>
+  <tr><td>Mutual authentication in LTE</td><td>C: authenticate both UE and network</td><td>T41</td></tr>
+  <tr><td>EPS-AKA is for</td><td>B: authentication</td><td>T41</td></tr>
+  <tr><td>Integrity-protected message in LTE attach</td><td>C: verify with integrity key</td><td>T41</td></tr>
+  <tr><td>KeNB use</td><td>A: handover</td><td>T41</td></tr>
+  <tr><td>Replay in LTE security setup</td><td>A: MME (see note)</td><td>T41</td></tr>
+  <tr><td>WiMAX weakness vs LTE</td><td>C: lack of mutual auth in earlier versions</td><td>T38</td></tr>
+  <tr><td>WiMAX key management component</td><td>C: AAA server</td><td>T37</td></tr>
+  <tr><td>PKMv2 stands for</td><td>B: Privacy Key Management v2</td><td>T37</td></tr>
+  <tr><td>PKMv2 vs PKMv1</td><td>A: PKMv2 supports mutual authentication</td><td>T37</td></tr>
+  <tr><td>Hybrid WiMAX–LTE focus</td><td>B: unified key management</td><td>T41</td></tr>
+</table>
+
+<!-- ================= SHEET ================= -->
+<h2 id="sheet">Night-before sheet</h2>
+<div class="box">
+<table>
+  <tr><th>Item</th><th>Fact</th></tr>
+  <tr><td>GSM</td><td>A3 (auth), A8 (Kc), A5 (air encryption); Ki secret; one-way authentication</td></tr>
+  <tr><td>GPRS</td><td>GEA ciphers; SGSN and GGSN; no SGSN–GGSN encryption</td></tr>
+  <tr><td>3G</td><td>AKA mutual auth; UEA1 (KASUMI), UEA2; UIA1, UIA2; USIM</td></tr>
+  <tr><td>LTE</td><td>EPS-AKA; K<sub>ASME</sub> → NAS and K<sub>eNB</sub>; SNOW 3G, AES, ZUC; HSS, MME</td></tr>
+  <tr><td>WEP</td><td>RC4, 24-bit IV, static key, CRC-32 (weak)</td></tr>
+  <tr><td>WPA2 / 802.11i</td><td>AES-CCMP; four-way handshake; PMK → PTK; GTK</td></tr>
+  <tr><td>WPA3</td><td>SAE (resists offline dictionary attacks); DPP</td></tr>
+  <tr><td>802.1X</td><td>Port-based; supplicant, authenticator, RADIUS; EAP-TLS strongest</td></tr>
+  <tr><td>Bluetooth</td><td>2.4 GHz, 79 channels; piconet 1 master + 7 slaves; SSP models; Mode 3 and 4</td></tr>
+  <tr><td>Bluetooth attacks</td><td>Bluejacking (messages), bluesnarfing (data), bluebugging (control)</td></tr>
+  <tr><td>WiMAX</td><td>802.16 (10–66 GHz LOS), 2004 fixed, 2005 mobile, 802.16m advanced</td></tr>
+  <tr><td>WiMAX security</td><td>SA (SAID, TEK); PKMv1 one-way; PKMv2 mutual (EAP); AES-CCM, AES-CMAC</td></tr>
+  <tr><td>Adaptive modulation</td><td>64-QAM (6 bits/baud, near), 16-QAM (4), QPSK (2, far)</td></tr>
+  <tr><td>Incident response</td><td>Preparation, detection, containment, eradication, recovery, lessons learned</td></tr>
+  <tr><td>CIA plus</td><td>Confidentiality, integrity, availability, authentication, authorisation, non-repudiation, privacy</td></tr>
+  <tr><td>Android</td><td>Linux kernel, UID sandbox, run-time permissions, APK signing, SELinux, Keystore</td></tr>
+  <tr><td>iOS</td><td>Secure boot chain, Secure Enclave, code signing, sandbox with entitlements, App Store review</td></tr>
+  <tr><td>Detection</td><td>Signature, anomaly, specification; HIDS vs NIDS</td></tr>
+  <tr><td>Policy</td><td>Subjects, objects, rights, rules; discretionary vs mandatory</td></tr>
+  <tr><td>5G</td><td>Slice isolation, SUPI concealment (SUCI), IoT authentication, zero trust</td></tr>
+</table>
+</div>
+
+<div class="warn">
+<strong>Points to check in the uploaded material:</strong>
+<ul>
+  <li>The Unit IV slides say 802.11a runs at 2–10 GHz. It runs at 5 GHz; 2–10 GHz is 802.16a.</li>
+  <li>One bank item gives EAP as the port-based access protocol. 802.1X is the framework; EAP carries credentials.</li>
+  <li>One bank item gives MAC filtering as a DoS defence. It does not stop floods; use rate limiting and 802.11w.</li>
+  <li>One bank item gives the MME as the replay detector. Replay is prevented with sequence numbers and nonces, checked in NAS security.</li>
+  <li>GEA1–GEA3 are the usual set; the slides also list GEA4.</li>
+  <li>Speeds and ranges differ between sources. Quote them as approximate.</li>
+</ul>
+</div>
+
+<h2 id="check">Final checklist</h2>
+<ul class="check">
+  <li>Part A: I can write each topic T1–T46 as a full 12-mark answer, with definition, introduction, points, advantages, disadvantages and conclusion.</li>
+  <li>Part B: I can answer the eight bank questions outside the syllabus.</li>
+  <li>Part C: I know the MCQ answers and their topic.</li>
+  <li>Night sheet: I can recall the key numbers and names.</li>
+</ul>
+
+<p class="sub" style="margin-top:36px">Built from your uploaded slides, notes and question banks, plus the syllabus. Check exact figures and names against your class notes before the exam.</p>
+
+</main>
+</body>
+</html>

@@ -14,6 +14,8 @@ import AuthModal from "./components/AuthModal";
 import AdminPortal from "./components/AdminPortal";
 import RecipeEditModal from "./components/RecipeEditModal";
 import VideoPlayer from "./components/VideoPlayer";
+import LoginDashboard from "./components/LoginDashboard";
+import UserDashboard from "./components/UserDashboard";
 import { uploadMediaFile } from "./utils/mediaUtils";
 import { useAuth } from "./context/AuthContext";
 
@@ -24,6 +26,31 @@ function App() {
   const { user, logout } = useAuth();
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [showAuth, setShowAuth] = useState(false);
+  const [activeView, setActiveView] = useState<"dashboard" | "recipes" | "favorites">(() => {
+    const saved = localStorage.getItem("crave-active-view");
+    if (saved === "dashboard" || saved === "recipes" || saved === "favorites") {
+      return saved;
+    }
+    return "recipes";
+  });
+
+  const changeView = (view: "dashboard" | "recipes" | "favorites") => {
+    setActiveView(view);
+    localStorage.setItem("crave-active-view", view);
+  };
+
+  const [isGuest, setIsGuest] = useState<boolean>(() => {
+    return localStorage.getItem("crave-guest") === "true";
+  });
+
+  const setGuestMode = (guest: boolean) => {
+    setIsGuest(guest);
+    if (guest) {
+      localStorage.setItem("crave-guest", "true");
+    } else {
+      localStorage.removeItem("crave-guest");
+    }
+  };
 
   useEffect(() => {
     const onPop = () => setCurrentPath(window.location.pathname);
@@ -46,19 +73,63 @@ function App() {
     window.addEventListener("hashchange", handleHash);
     return () => window.removeEventListener("hashchange", handleHash);
   }, [user]);
+
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState<string>(() => {
+    return localStorage.getItem("crave-category") || "All";
+  });
+
+  const changeCategory = (cat: string) => {
+    setCategory(cat);
+    localStorage.setItem("crave-category", cat);
+  };
+
   const [favorites, setFavorites] = useState<number[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(() => {
-    return localStorage.getItem("crave-view") === "favorites";
+    const savedActive = localStorage.getItem("crave-active-view");
+    return savedActive === "favorites" || localStorage.getItem("crave-view") === "favorites";
   });
+
   useEffect(() => {
     localStorage.setItem(
       "crave-view",
       showFavoritesOnly ? "favorites" : "all"
     );
   }, [showFavoritesOnly]);
-  const [selectedRecipe, setSelectedRecipe] = useState<number | null>(null);
+
+  const [selectedRecipe, setSelectedRecipe] = useState<number | null>(() => {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith("#recipe-")) {
+      const id = parseInt(hash.replace("#recipe-", ""), 10);
+      return isNaN(id) ? null : id;
+    }
+    return null;
+  });
+
+  const handleSelectRecipe = (id: number | null) => {
+    setSelectedRecipe(id);
+    if (id !== null) {
+      window.history.replaceState(null, "", `#recipe-${id}`);
+    } else {
+      if (window.location.hash.startsWith("#recipe-")) {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith("#recipe-")) {
+        const id = parseInt(hash.replace("#recipe-", ""), 10);
+        if (!isNaN(id)) setSelectedRecipe(id);
+      } else if (selectedRecipe !== null) {
+        setSelectedRecipe(null);
+      }
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [selectedRecipe]);
 
   useEffect(() => {
     getFavorites()
@@ -225,7 +296,7 @@ function App() {
       time: newRecipe.time || "30 min",
       image: newRecipe.image || "",
       ingredients: newRecipe.ingredients
-        .split(",")
+        .split(/[\n,]+/)
         .map((item) => item.trim())
         .filter(Boolean),
       instructions: newRecipe.instructions
@@ -273,6 +344,14 @@ function App() {
     (recipe) => recipe.id === selectedRecipe
   );
 
+  const handleLogout = async () => {
+    await logout();
+    setGuestMode(false);
+    localStorage.removeItem("crave-active-view");
+    changeView("recipes");
+    handleSelectRecipe(null);
+  };
+
   if (currentPath.startsWith("/admin")) {
     return (
       <AdminPortal
@@ -284,35 +363,58 @@ function App() {
     );
   }
 
+  // 1. If unauthenticated and not explicitly in guest preview -> Render the Login Dashboard first!
+  if (!user && !isGuest) {
+    return (
+      <LoginDashboard
+        onGuestContinue={() => {
+          setGuestMode(true);
+          changeView("recipes");
+        }}
+        onAdminNavigate={() => navigate("/admin")}
+      />
+    );
+  }
+
   return (
     <div className="app">
       <nav className="navbar">
-        <div className="logo">
-          <span className="logo-icon">✳</span> crave
+        <div className="logo" onClick={() => user ? changeView("dashboard") : changeView("recipes")} style={{ cursor: "pointer" }}>
+          crave
         </div>
 
         <div className="nav-links">
-          <a
-            href="#home"
-            className={!showFavoritesOnly ? "active" : ""}
-            onClick={() => setShowFavoritesOnly(false)}
+          {user && (
+            <button
+              type="button"
+              className={`nav-tab-btn ${activeView === "dashboard" ? "active" : ""}`}
+              onClick={() => changeView("dashboard")}
+            >
+              Dashboard
+            </button>
+          )}
+
+          <button
+            type="button"
+            className={`nav-tab-btn ${activeView === "recipes" ? "active" : ""}`}
+            onClick={() => {
+              changeView("recipes");
+              setShowFavoritesOnly(false);
+            }}
           >
-            Home
-          </a>
-          <a
-            href="#recipes"
-            className={!showFavoritesOnly ? "active" : ""}
-            onClick={() => setShowFavoritesOnly(false)}
+            Explore Recipes
+          </button>
+
+          <button
+            type="button"
+            className={`nav-tab-btn ${activeView === "favorites" ? "active" : ""}`}
+            onClick={() => {
+              changeView("favorites");
+              setShowFavoritesOnly(true);
+            }}
           >
-            Explore
-          </a>
-          <a
-            href="#recipes"
-            className={showFavoritesOnly ? "active" : ""}
-            onClick={() => setShowFavoritesOnly(true)}
-          >
-            Favorites
-          </a>
+            Favorites {favorites.length > 0 ? `(${favorites.length})` : ""}
+          </button>
         </div>
 
         <div className="nav-right">
@@ -324,231 +426,292 @@ function App() {
 
               <span className="user-name">{user.name}</span>
 
-              <button className="auth-nav-btn" onClick={logout}>
+              {user.role === "admin" && (
+                <button
+                  className="auth-nav-btn admin-badge-btn"
+                  onClick={() => navigate("/admin/dashboard")}
+                  title="Open Admin Console"
+                >
+                  Admin
+                </button>
+              )}
+
+              <button className="auth-nav-btn" onClick={handleLogout}>
                 Logout
               </button>
             </>
           ) : (
             <button
               className="auth-nav-btn"
-              onClick={() => setShowAuth(true)}
+              onClick={() => setGuestMode(false)}
             >
-              Login / Sign Up
+              Sign In
             </button>
           )}
         </div>
       </nav>
 
       <main className="main-content" id="home">
-        <section className="hero">
-          <div className="hero-content">
-            <span className="eyebrow">YOUR DAILY DOSE OF DELICIOUS</span>
-            <h1>
-              Find your next
-              <br />
-              <span>favorite meal.</span>
-            </h1>
-            <p>
-              Good food, great mood. Discover recipes that make
-              every meal feel special.
-            </p>
+        {/* VIEW 1: AUTHENTICATED USER DASHBOARD */}
+        {activeView === "dashboard" && user && (
+          <UserDashboard
+            userName={user.name}
+            userRole={user.role}
+            recipes={recipes}
+            favorites={favorites}
+            onNavigateToRecipes={() => {
+              changeView("recipes");
+              setShowFavoritesOnly(false);
+            }}
+            onNavigateToFavorites={() => {
+              changeView("favorites");
+              setShowFavoritesOnly(true);
+            }}
+            onOpenAddRecipe={() => setShowAddForm(true)}
+            onSelectRecipe={(id) => handleSelectRecipe(id)}
+            onNavigateToAdmin={
+              user.role === "admin"
+                ? () => navigate("/admin/dashboard")
+                : undefined
+            }
+          />
+        )}
 
-            <div className="search-box">
-              <span>⌕</span>
-              <input
-                type="text"
-                placeholder="Search recipes, cuisines..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <button onClick={() => document.getElementById("recipes")?.scrollIntoView()}>
-                Search
-              </button>
-            </div>
+        {/* VIEW 2 & 3: RECIPES & FAVORITES VIEWS */}
+        {(activeView === "recipes" || activeView === "favorites" || !user) && (
+          <>
+            {activeView === "recipes" && (
+              <section className="hero">
+                <div className="hero-content">
+                  <span className="eyebrow">YOUR DAILY DOSE OF DELICIOUS</span>
+                  <h1>
+                    Find your next
+                    <br />
+                    <span>favorite meal.</span>
+                  </h1>
+                  <p>
+                    Good food, great mood. Discover recipes that make
+                    every meal feel special.
+                  </p>
 
-            <div className="hero-tags">
-              <span>Fresh ingredients</span>
-              <span>Easy recipes</span>
-              <span>Quick meals</span>
-            </div>
-          </div>
+                  <div className="search-box">
+                    <span aria-hidden="true">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      </svg>
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Search recipes, cuisines..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                    <button onClick={() => document.getElementById("recipes")?.scrollIntoView()}>
+                      Search
+                    </button>
+                  </div>
 
-          <div className="hero-image">
-            <img
-              src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1000"
-              alt="Fresh healthy meal"
-            />
-            <div className="hero-image-label">
-              <span>Today's inspiration</span>
-              <strong>Eat well, live well.</strong>
-            </div>
-          </div>
-        </section>
+                  <div className="hero-tags">
+                    <span>Fresh ingredients</span>
+                    <span>Easy recipes</span>
+                    <span>Quick meals</span>
+                  </div>
+                </div>
 
-        <section className="recipe-section" id="recipes">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">MADE FOR YOUR TASTE</span>
-              <h2>Explore recipes</h2>
-            </div>
-            <button
-              className="add-recipe-btn"
-              onClick={() => {
-                if (!user) {
-                  alert("Please sign in to your kitchen account to add recipes.");
-                  setShowAuth(true);
-                  return;
-                }
-                setShowAddForm(true);
-              }}
-            >
-              + Add Recipe
-            </button>
-          </div>
-
-          <div className="recipe-filter-buttons">
-            <button
-              className={!showFavoritesOnly ? "active" : ""}
-              onClick={() => setShowFavoritesOnly(false)}
-            >
-              All Recipes
-            </button>
-
-            <button
-              className={showFavoritesOnly ? "active" : ""}
-              onClick={() => setShowFavoritesOnly(true)}
-            >
-              ❤️ Favorites
-            </button>
-          </div>
-
-          <div className="category-list">
-            {categories.map((item) => (
-              <button
-                key={item}
-                className={`category-btn ${category === item ? "selected" : ""
-                  }`}
-                onClick={() => setCategory(item)}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-
-          <div className="recipe-grid">
-            {filteredRecipes.map((recipe) => (
-              <article className="recipe-card" key={recipe.id}>
-                <div className="recipe-image">
+                <div className="hero-image">
                   <img
-                    src={recipe.image?.trim() ? recipe.image : DEFAULT_RECIPE_IMAGE}
-                    alt={recipe.name}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      if (target.src !== DEFAULT_RECIPE_IMAGE) {
-                        target.src = DEFAULT_RECIPE_IMAGE;
-                      }
-                    }}
+                    src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1000"
+                    alt="Fresh healthy meal"
                   />
-                  <button
-                    className="delete-recipe-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteRecipe(recipe.id);
-                    }}
-                    title="Delete recipe"
-                  >
-                    ×
-                  </button>
-                  <button
-                    className={`favorite-btn ${favorites.includes(recipe.id) ? "liked" : ""
-                      }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(recipe.id);
-                    }}
-                    aria-label="Toggle favorite"
-                  >
-                    {favorites.includes(recipe.id) ? "♥" : "♡"}
-                  </button>
-                  <span className="time-label">
-                    ⏱ {recipe.time}
+                  <div className="hero-image-label">
+                    <span>Today's inspiration</span>
+                    <strong>Eat well, live well.</strong>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {activeView === "favorites" && (
+              <section className="favorites-section" id="favorites">
+                <div className="favorites-banner">
+                  <div>
+                    <span className="eyebrow">SAVED COLLECTION</span>
+                    <h2>Saved Recipes</h2>
+                    <p>
+                      {favorites.length} recipes saved to your favorites.
+                    </p>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            <section className="recipe-section" id="recipes">
+              <div className="section-heading">
+                <div>
+                  <span className="eyebrow">
+                    {activeView === "favorites" ? "SAVED COLLECTION" : "MADE FOR YOUR TASTE"}
                   </span>
+                  <h2>{activeView === "favorites" ? "Your Favorite Recipes" : "Explore recipes"}</h2>
                 </div>
+                <button
+                  className="add-recipe-btn"
+                  onClick={() => {
+                    if (!user) {
+                      alert("Please sign in to your kitchen account to add recipes.");
+                      setIsGuest(false);
+                      return;
+                    }
+                    setShowAddForm(true);
+                  }}
+                >
+                  + Add Recipe
+                </button>
+              </div>
 
-                <div className="recipe-info">
-                  <div className="recipe-meta">
-                    <span>{recipe.category}</span>
-                    <span>{recipe.rating && Number(recipe.rating) > 0 ? `★ ${recipe.rating}` : "★ —"}</span>
-                  </div>
+              <div className="recipe-filter-buttons">
+                <button
+                  className={activeView !== "favorites" && !showFavoritesOnly ? "active" : ""}
+                  onClick={() => {
+                    changeView("recipes");
+                    setShowFavoritesOnly(false);
+                  }}
+                >
+                  All Recipes
+                </button>
 
-                  <h3>{recipe.name}</h3>
-                  <p>{recipe.description}</p>
+                <button
+                  className={activeView === "favorites" || showFavoritesOnly ? "active" : ""}
+                  onClick={() => {
+                    changeView("favorites");
+                    setShowFavoritesOnly(true);
+                  }}
+                >
+                  Favorites
+                </button>
+              </div>
 
-                  <div className="card-actions-row">
-                    <button
-                      className="view-recipe"
-                      onClick={() => setSelectedRecipe(recipe.id)}
-                    >
-                      View recipe <span>↗</span>
-                    </button>
-                    <button
-                      className="card-edit-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!user) {
-                          alert("Please sign in to edit recipes.");
-                          setShowAuth(true);
-                          return;
-                        }
-                        setEditingRecipe(recipe);
-                      }}
-                      title="Edit this recipe"
-                    >
-                      ✎ Edit
-                    </button>
-                  </div>
+              <div className="category-list">
+                {categories.map((item) => (
+                  <button
+                    key={item}
+                    className={`category-btn ${category === item ? "selected" : ""
+                      }`}
+                    onClick={() => changeCategory(item)}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+
+              <div className="recipe-grid">
+                {filteredRecipes.map((recipe) => {
+                  const canModify = Boolean(
+                    user && (user.role === "admin" || (recipe.userId && recipe.userId === user.id))
+                  );
+
+                  return (
+                    <article className="recipe-card" key={recipe.id}>
+                      <div className="recipe-image">
+                        <img
+                          src={recipe.image?.trim() ? recipe.image : DEFAULT_RECIPE_IMAGE}
+                          alt={recipe.name}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            if (target.src !== DEFAULT_RECIPE_IMAGE) {
+                              target.src = DEFAULT_RECIPE_IMAGE;
+                            }
+                          }}
+                        />
+                        {canModify && (
+                          <button
+                            className="delete-recipe-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteRecipe(recipe.id);
+                            }}
+                            title="Delete your recipe"
+                          >
+                            ×
+                          </button>
+                        )}
+                        <button
+                          className={`favorite-btn ${favorites.includes(recipe.id) ? "liked" : ""
+                            }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(recipe.id);
+                          }}
+                          aria-label="Toggle favorite"
+                        >
+                          {favorites.includes(recipe.id) ? "Saved" : "Save"}
+                        </button>
+                        <span className="time-label">
+                          {recipe.time}
+                        </span>
+                      </div>
+
+                      <div className="recipe-info">
+                        <div className="recipe-meta">
+                          <span>{recipe.category}</span>
+                          <span>{recipe.rating && Number(recipe.rating) > 0 ? `Rating: ${recipe.rating}` : "Rating: —"}</span>
+                        </div>
+
+                        <h3>{recipe.name}</h3>
+                        <p>{recipe.description}</p>
+
+                        <div className="card-actions-row">
+                          <button
+                            className="view-recipe"
+                            onClick={() => handleSelectRecipe(recipe.id)}
+                          >
+                            View recipe <span>↗</span>
+                          </button>
+                          {canModify && (
+                            <button
+                              className="card-edit-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingRecipe(recipe);
+                              }}
+                              title="Edit your recipe"
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              {loadingRecipes && (
+                <div className="empty-state">
+                  <p>Loading recipes...</p>
                 </div>
-              </article>
-            ))}
-          </div>
+              )}
 
-          {loadingRecipes && (
-            <div className="empty-state">
-              <p>Loading recipes...</p>
-            </div>
-          )}
-
-          {filteredRecipes.length === 0 && !loadingRecipes && (
-            <div className="empty-state">
-              <h3>No recipes found!</h3>
-              <p>Try searching something else.</p>
-            </div>
-          )}
-        </section>
-
-        <section className="favorites-section" id="favorites">
-          <div className="favorites-banner">
-            <div>
-              <span className="eyebrow">YOUR LITTLE COOKBOOK</span>
-              <h2>Saved with love ♥</h2>
-              <p>
-                {favorites.length} recipes saved to your favorites.
-              </p>
-            </div>
-            <span className="favorites-icon">♡</span>
-          </div>
-        </section>
+              {filteredRecipes.length === 0 && !loadingRecipes && (
+                <div className="empty-state">
+                  <h3>No recipes found!</h3>
+                  <p>{activeView === "favorites" ? "You haven't added any favorites yet." : "Try searching something else."}</p>
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </main>
 
       {activeRecipe && (
-        <div className="modal-overlay" onClick={() => setSelectedRecipe(null)}>
+        <div className="modal-overlay" onClick={() => handleSelectRecipe(null)}>
           <div
             className="recipe-modal"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               className="close-modal"
-              onClick={() => setSelectedRecipe(null)}
+              onClick={() => handleSelectRecipe(null)}
             >
               ×
             </button>
@@ -569,8 +732,8 @@ function App() {
               <h2>{activeRecipe.name}</h2>
               <p>{activeRecipe.description}</p>
               <div className="modal-meta">
-                <span>⏱ {activeRecipe.time}</span>
-                <span>{activeRecipe.rating && Number(activeRecipe.rating) > 0 ? `★ ${activeRecipe.rating}` : "★ —"}</span>
+                <span>{activeRecipe.time}</span>
+                <span>{activeRecipe.rating && Number(activeRecipe.rating) > 0 ? `Rating: ${activeRecipe.rating}` : "Rating: —"}</span>
               </div>
               <h3>Ingredients</h3>
               <ul>
@@ -599,23 +762,20 @@ function App() {
                   onClick={() => toggleFavorite(activeRecipe.id)}
                 >
                   {favorites.includes(activeRecipe.id)
-                    ? "♥ Remove from favorites"
-                    : "♡ Add to favorites"}
+                    ? "Remove from favorites"
+                    : "Add to favorites"}
                 </button>
 
-                <button
-                  className="modal-edit-action"
-                  onClick={() => {
-                    if (!user) {
-                      alert("Please sign in to edit recipes.");
-                      setShowAuth(true);
-                      return;
-                    }
-                    setEditingRecipe(activeRecipe);
-                  }}
-                >
-                  ✎ Edit Recipe
-                </button>
+                {user && (user.role === "admin" || (activeRecipe.userId && activeRecipe.userId === user.id)) && (
+                  <button
+                    className="modal-edit-action"
+                    onClick={() => {
+                      setEditingRecipe(activeRecipe);
+                    }}
+                  >
+                    Edit Recipe
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -690,7 +850,7 @@ function App() {
                 <div className="media-input-dual">
                   <div className="file-upload-box">
                     <label htmlFor="add-photo-file" className="file-upload-button">
-                      📁 Choose Photo from Gallery
+                      Choose Photo from Gallery
                     </label>
                     <input
                       id="add-photo-file"
@@ -742,7 +902,7 @@ function App() {
                 <div className="media-input-dual">
                   <div className="file-upload-box">
                     <label htmlFor="add-video-file" className="file-upload-button">
-                      📁 Upload Video from Gallery
+                      Upload Video from Gallery
                     </label>
                     <input
                       id="add-video-file"
@@ -816,13 +976,13 @@ function App() {
             setRecipes((prev) =>
               prev.map((r) => (r.id === updated.id ? updated : r))
             );
-            setSelectedRecipe(updated.id);
+            handleSelectRecipe(updated.id);
           }}
         />
       )}
 
       <footer>
-        <div className="logo">✳ crave</div>
+        <div className="logo">crave</div>
         <p>Made for the love of food.</p>
         <span>© 2026 Crave Recipe Studio</span>
       </footer>

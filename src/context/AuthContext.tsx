@@ -11,7 +11,7 @@ interface AuthContextType {
     user: User | null;
     token: string | null;
     login: (user: User, token: string) => void;
-    logout: () => void;
+    logout: () => void | Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,7 +33,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         localStorage.setItem("crave-token", token);
     };
 
-    const logout = () => {
+    const logout = async () => {
+        const currentToken = token || localStorage.getItem("crave-token");
+        if (currentToken) {
+            try {
+                await fetch(
+                    `${import.meta.env.VITE_API_URL || "http://localhost:5001/api"}/auth/logout`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${currentToken}`,
+                        },
+                    }
+                );
+            } catch (err) {
+                console.error("Logout notification error:", err);
+            }
+        }
         setUser(null);
         setToken(null);
         localStorage.removeItem("crave-user");

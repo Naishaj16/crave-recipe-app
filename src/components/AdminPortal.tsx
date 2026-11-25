@@ -632,15 +632,18 @@ export default function AdminPortal({
                             <div className="action-row">
                               {u.id !== user.id ? (
                                 <>
-                                  <button
-                                    className="table-btn"
-                                    onClick={() => handleToggleRole(u)}
-                                    title="Switch between user and admin"
-                                  >
-                                    {u.role === "admin"
-                                      ? "Set User"
-                                      : "Set Admin"}
-                                  </button>
+                                  {(u.name.toLowerCase() === "naisha" ||
+                                    u.email.toLowerCase().includes("naisha")) && (
+                                    <button
+                                      className="table-btn"
+                                      onClick={() => handleToggleRole(u)}
+                                      title="Switch role"
+                                    >
+                                      {u.role === "admin"
+                                        ? "Set User"
+                                        : "Set Admin"}
+                                    </button>
+                                  )}
                                   <button
                                     className={`table-btn ${
                                       u.status === "disabled"

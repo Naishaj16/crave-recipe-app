@@ -12,6 +12,7 @@ export interface Recipe {
     instructions: string[];
     videoUrl?: string;
     isDeleted?: boolean;
+    userId?: number | null;
 }
 
 const formatRecipe = (recipe: any): Recipe => ({
@@ -20,6 +21,7 @@ const formatRecipe = (recipe: any): Recipe => ({
     rating: String(recipe.rating ?? "0"),
     videoUrl: recipe.video_url || recipe.videoUrl || "",
     isDeleted: recipe.is_deleted ?? false,
+    userId: recipe.user_id ?? recipe.userId ?? null,
 });
 
 const timeToMinutes = (time: string) => {

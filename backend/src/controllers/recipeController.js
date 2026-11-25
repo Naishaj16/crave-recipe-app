@@ -81,6 +81,31 @@ const updateRecipe = async (req, res) => {
       video_url,
     } = req.body;
 
+    const existing = await pool.query(
+      "SELECT id, user_id, is_deleted FROM recipes WHERE id = $1",
+      [id]
+    );
+
+    if (existing.rows.length === 0 || existing.rows[0].is_deleted) {
+      return res.status(404).json({
+        success: false,
+        message: "Recipe not found",
+      });
+    }
+
+    const recipe = existing.rows[0];
+
+    // Authorization: only author or admin can edit
+    const isOwner = req.user && recipe.user_id && req.user.id === recipe.user_id;
+    const isAdmin = req.user && req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only edit your own recipes.",
+      });
+    }
+
     const result = await pool.query(
       `UPDATE recipes SET
         name = $1,
@@ -107,13 +132,6 @@ const updateRecipe = async (req, res) => {
       ]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Recipe not found",
-      });
-    }
-
     res.json({
       success: true,
       message: "Recipe updated",
@@ -130,6 +148,31 @@ const deleteRecipe = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const existing = await pool.query(
+      "SELECT id, user_id, is_deleted FROM recipes WHERE id = $1",
+      [id]
+    );
+
+    if (existing.rows.length === 0 || existing.rows[0].is_deleted) {
+      return res.status(404).json({
+        success: false,
+        message: "Recipe not found",
+      });
+    }
+
+    const recipe = existing.rows[0];
+
+    // Authorization: only author or admin can delete
+    const isOwner = req.user && recipe.user_id && req.user.id === recipe.user_id;
+    const isAdmin = req.user && req.user.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only delete your own recipes.",
+      });
+    }
+
     const result = await pool.query(
       `UPDATE recipes
        SET is_deleted = true, updated_at = CURRENT_TIMESTAMP
@@ -137,13 +180,6 @@ const deleteRecipe = async (req, res) => {
        RETURNING id`,
       [id]
     );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Recipe not found",
-      });
-    }
 
     res.json({ success: true, message: "Recipe moved to Trash" });
   } catch (error) {

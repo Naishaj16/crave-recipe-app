@@ -134,19 +134,19 @@ export default function AdminDashboard({
             className={activeTab === "stats" ? "active" : ""}
             onClick={() => setActiveTab("stats")}
           >
-            📊 Overview & Stats
+            Overview & Stats
           </button>
           <button
             className={activeTab === "users" ? "active" : ""}
             onClick={() => setActiveTab("users")}
           >
-            👥 User Directory ({users.length})
+            User Directory ({users.length})
           </button>
           <button
             className={activeTab === "recipes" ? "active" : ""}
             onClick={() => setActiveTab("recipes")}
           >
-            🍲 Recipe & Trash Manager ({stats?.trashedRecipes || 0} in Trash)
+            Recipe & Trash Manager ({stats?.trashedRecipes || 0} in Trash)
           </button>
         </div>
 
@@ -277,7 +277,7 @@ export default function AdminDashboard({
                                   className="admin-restore-btn"
                                   onClick={() => handleRestore(r.id)}
                                 >
-                                  ↩ Restore
+                                  Restore
                                 </button>
                                 <button
                                   className="admin-delete-btn"

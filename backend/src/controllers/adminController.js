@@ -93,6 +93,36 @@ const updateUserRole = async (req, res) => {
       });
     }
 
+    // Protection: Admin cannot demote their own account
+    if (role === "user" && req.user.id === parseInt(id, 10)) {
+      return res.status(400).json({
+        success: false,
+        message: "Administrators cannot remove their own administrator privileges.",
+      });
+    }
+
+    // Safety check: Only Naisha can hold administrator privileges
+    if (role === "admin") {
+      const userCheck = await pool.query(
+        "SELECT id, name, email FROM users WHERE id = $1",
+        [id]
+      );
+      if (userCheck.rows.length === 0) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+      const target = userCheck.rows[0];
+      const isNaisha =
+        target.name.toLowerCase() === "naisha" ||
+        target.email.toLowerCase().includes("naisha");
+
+      if (!isNaisha) {
+        return res.status(403).json({
+          success: false,
+          message: "Only the primary administrator (Naisha) can hold administrator privileges.",
+        });
+      }
+    }
+
     const result = await pool.query(
       "UPDATE users SET role = $1 WHERE id = $2 RETURNING id, name, email, role, status",
       [role, id]
@@ -196,7 +226,6 @@ const deleteUser = async (req, res) => {
 
     const targetUser = userRes.rows[0];
 
-    await pool.query("DELETE FROM recipe_favorites WHERE user_id = $1", [id]);
     await pool.query("UPDATE recipes SET user_id = NULL WHERE user_id = $1", [id]);
     await pool.query("DELETE FROM users WHERE id = $1", [id]);
 

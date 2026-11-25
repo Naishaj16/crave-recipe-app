@@ -106,12 +106,28 @@ export default function AuthModal({ onClose }: AuthModalProps) {
                     {mode === "login" ? (
                         <>
                             Don't have an account?{" "}
-                            <button onClick={() => setMode("signup")}>Sign up</button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setMode("signup");
+                                    setError("");
+                                }}
+                            >
+                                Sign up
+                            </button>
                         </>
                     ) : (
                         <>
                             Already have an account?{" "}
-                            <button onClick={() => setMode("login")}>Log in</button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setMode("login");
+                                    setError("");
+                                }}
+                            >
+                                Log in
+                            </button>
                         </>
                     )}
                 </div>

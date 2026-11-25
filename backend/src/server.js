@@ -15,7 +15,13 @@ const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors({
-  origin: "http://localhost:5173"
+  origin: [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174"
+  ],
+  credentials: true,
 }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -61,6 +67,15 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/upload", uploadRoutes);
+
+// Global JSON error handling middleware (handles Multer errors, file validation, etc.)
+app.use((err, req, res, next) => {
+  console.error("API error:", err.message);
+  res.status(err.status || 400).json({
+    success: false,
+    message: err.message || "An unexpected error occurred",
+  });
+});
 
 // Start server
 app.listen(PORT, () => {

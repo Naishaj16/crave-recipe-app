@@ -123,7 +123,6 @@ export default function VideoPlayer({ url, title = "Recipe Video Tutorial" }: Vi
   return (
     <div className="video-player-container fallback-container">
       <div className="video-fallback-card">
-        <div className="fallback-icon">🎬</div>
         <div className="fallback-info">
           <strong>External Video Tutorial</strong>
           <p>This video is hosted on an external culinary website.</p>
