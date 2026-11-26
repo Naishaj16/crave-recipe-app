@@ -16,6 +16,7 @@ export interface UserProfile {
   status: string;
   bio?: string;
   dietary_preferences?: string[];
+  twoFactorEnabled?: boolean;
   created_at: string;
   last_login?: string;
   createdRecipesCount?: number;

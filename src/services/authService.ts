@@ -93,3 +93,49 @@ export const resetPassword = async (token: string, newPassword: string) => {
     }
     return data;
 };
+
+export const verify2FA = async (tempToken: string, code: string) => {
+    const response = await fetch(`${API_URL}/auth/verify-2fa`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tempToken, code }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "Two-factor verification failed");
+    }
+    return data;
+};
+
+export const resend2FA = async (tempToken: string) => {
+    const response = await fetch(`${API_URL}/auth/resend-2fa`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tempToken }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "Failed to resend two-factor code");
+    }
+    return data;
+};
+
+export const toggle2FA = async (enable: boolean) => {
+    const token = localStorage.getItem("crave-token");
+    const response = await fetch(`${API_URL}/auth/toggle-2fa`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token || ""}`,
+        },
+        body: JSON.stringify({ enable }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "Failed to update 2FA configuration");
+    }
+    return data;
+};

@@ -5,12 +5,9 @@ import {
   googleLoginUser,
   forgotPassword,
   resetPassword,
+  verify2FA,
+  resend2FA,
 } from "../services/authService";
-import {
-  signInWithGooglePopup,
-  isFirebaseConfigured,
-  formatFirebaseAuthError,
-} from "../services/firebase";
 import { useAuth } from "../context/AuthContext";
 
 interface LoginDashboardProps {
@@ -23,7 +20,7 @@ export default function LoginDashboard({
   onAdminNavigate,
 }: LoginDashboardProps) {
   const { login } = useAuth();
-  const [mode, setMode] = useState<"login" | "signup" | "forgot" | "reset">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot" | "reset" | "2fa">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,11 +28,17 @@ export default function LoginDashboard({
   const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [twoFactorToken, setTwoFactorToken] = useState("");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [demo2FACode, setDemo2FACode] = useState("");
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [showFirebaseGuide, setShowFirebaseGuide] = useState(false);
+  const [showGoogleChooser, setShowGoogleChooser] = useState(false);
+  const [customGoogleEmail, setCustomGoogleEmail] = useState("");
+  const [customGoogleName, setCustomGoogleName] = useState("");
+  const [showCustomGoogleInput, setShowCustomGoogleInput] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,13 +53,34 @@ export default function LoginDashboard({
         login(data.user, data.token);
       } else if (mode === "login") {
         const data = await loginUser(email, password);
+        if (data.requires2FA) {
+          setTwoFactorToken(data.tempToken);
+          setDemo2FACode(data.demoCode || "");
+          if (data.demoCode) {
+            setTwoFactorCode(data.demoCode);
+          }
+          setSuccessMsg(
+            data.demoCode
+              ? `Two-Factor Authentication is active. Security code: ${data.demoCode}`
+              : "Two-Factor Authentication is active. Enter the 6-digit verification code."
+          );
+          setMode("2fa");
+        } else {
+          login(data.user, data.token);
+        }
+      } else if (mode === "2fa") {
+        const data = await verify2FA(twoFactorToken, twoFactorCode);
         login(data.user, data.token);
       } else if (mode === "forgot") {
         const res = await forgotPassword(email);
-        setSuccessMsg(res.message || "Password recovery token generated. Check your email or use the token below.");
         if (res.resetToken) {
           setResetToken(res.resetToken);
         }
+        setSuccessMsg(
+          res.resetToken
+            ? `Password recovery code generated: ${res.resetToken}. Enter your code and choose a new password.`
+            : res.message || "Password recovery code generated."
+        );
         setMode("reset");
       } else if (mode === "reset") {
         const res = await resetPassword(resetToken, newPassword);
@@ -71,28 +95,66 @@ export default function LoginDashboard({
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleResend2FA = async () => {
     setError("");
     setSuccessMsg("");
-
-    // Verify Firebase configuration before opening popup
-    if (!isFirebaseConfigured()) {
-      setError(
-        "Firebase Google Authentication is not configured yet. Please configure your Firebase environment variables in the project's .env file (VITE_FIREBASE_API_KEY). Click 'View setup steps' below for a quick guide."
-      );
-      return;
-    }
-
-    setGoogleLoading(true);
     try {
-      const googleUser = await signInWithGooglePopup();
-      const data = await googleLoginUser(googleUser);
-      login(data.user, data.token);
+      const res = await resend2FA(twoFactorToken);
+      setDemo2FACode(res.demoCode || "");
+      if (res.demoCode) {
+        setTwoFactorCode(res.demoCode);
+      }
+      setSuccessMsg(`Fresh verification code generated: ${res.demoCode}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to resend code");
+    }
+  };
+
+  const handleGoogleSignIn = () => {
+    setError("");
+    setSuccessMsg("");
+    setShowGoogleChooser(true);
+  };
+
+  const handleSelectGoogleAccount = async (account: { email: string; name: string }) => {
+    setGoogleLoading(true);
+    setError("");
+    setSuccessMsg("");
+    try {
+      const data = await googleLoginUser(account);
+      if (data.requires2FA) {
+        setTwoFactorToken(data.tempToken);
+        setDemo2FACode(data.demoCode || "");
+        if (data.demoCode) {
+          setTwoFactorCode(data.demoCode);
+        }
+        setSuccessMsg(
+          data.demoCode
+            ? `Two-Factor Authentication is active. Security code: ${data.demoCode}`
+            : "Two-Factor Authentication is active. Enter the 6-digit verification code."
+        );
+        setMode("2fa");
+        setShowGoogleChooser(false);
+      } else {
+        login(data.user, data.token);
+        setShowGoogleChooser(false);
+      }
     } catch (err: any) {
-      setError(formatFirebaseAuthError(err));
+      setError(err instanceof Error ? err.message : "Google authentication failed");
+      setShowGoogleChooser(false);
     } finally {
       setGoogleLoading(false);
     }
+  };
+
+  const handleCustomGoogleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customGoogleEmail.trim()) return;
+    const nameToUse = customGoogleName.trim() || customGoogleEmail.split("@")[0] || "Chef";
+    handleSelectGoogleAccount({
+      email: customGoogleEmail.trim().toLowerCase(),
+      name: nameToUse,
+    });
   };
 
   return (
@@ -165,7 +227,7 @@ export default function LoginDashboard({
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
-              Encrypted session security
+              Two-Factor & Encrypted Session Security
             </span>
           </div>
         </div>
@@ -175,7 +237,7 @@ export default function LoginDashboard({
           <div className="card-top-nav">
             <button
               type="button"
-              className={`mode-tab ${mode === "login" || mode === "forgot" || mode === "reset" ? "active" : ""}`}
+              className={`mode-tab ${mode === "login" || mode === "forgot" || mode === "reset" || mode === "2fa" ? "active" : ""}`}
               onClick={() => {
                 setMode("login");
                 setError("");
@@ -203,12 +265,14 @@ export default function LoginDashboard({
               {mode === "signup" && "Create your kitchen"}
               {mode === "forgot" && "Reset your password"}
               {mode === "reset" && "Set new password"}
+              {mode === "2fa" && "Two-Factor Verification"}
             </h2>
             <p>
               {mode === "login" && "Enter your credentials to enter your recipe dashboard."}
               {mode === "signup" && "Join Crave to start saving and creating delicious meals."}
-              {mode === "forgot" && "Enter your registered email address to receive reset instructions."}
-              {mode === "reset" && "Enter your verification token and your new password."}
+              {mode === "forgot" && "Enter your registered email address to receive your 6-digit recovery code."}
+              {mode === "reset" && "Enter your 6-digit recovery code and choose your new password."}
+              {mode === "2fa" && "Two-Factor Authentication is active. Enter the 6-digit verification code to sign in."}
             </p>
           </div>
 
@@ -219,7 +283,15 @@ export default function LoginDashboard({
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
-              <span>{error}</span>
+              <span style={{ flex: 1 }}>{error}</span>
+              <button
+                type="button"
+                className="alert-dismiss-btn"
+                onClick={() => setError("")}
+                aria-label="Dismiss error"
+              >
+                ✕
+              </button>
             </div>
           )}
 
@@ -229,7 +301,37 @@ export default function LoginDashboard({
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
-              <span>{successMsg}</span>
+              <span style={{ flex: 1 }}>{successMsg}</span>
+              <button
+                type="button"
+                className="alert-dismiss-btn"
+                onClick={() => setSuccessMsg("")}
+                aria-label="Dismiss notice"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Reset Code Callout */}
+          {mode === "reset" && resetToken && (
+            <div className="security-code-banner">
+              <div className="security-code-row">
+                <span>Recovery Code:</span>
+                <span className="security-code-chip">{resetToken}</span>
+              </div>
+              <span style={{ fontSize: "11.5px", color: "#2d6a4f" }}>Pre-filled below for easy verification.</span>
+            </div>
+          )}
+
+          {/* 2FA Demo Code Callout */}
+          {mode === "2fa" && demo2FACode && (
+            <div className="security-code-banner">
+              <div className="security-code-row">
+                <span>Security Code:</span>
+                <span className="security-code-chip">{demo2FACode}</span>
+              </div>
+              <span style={{ fontSize: "11.5px", color: "#2d6a4f" }}>Pre-filled below (valid for 10 minutes).</span>
             </div>
           )}
 
@@ -315,14 +417,40 @@ export default function LoginDashboard({
               </div>
             )}
 
+            {mode === "2fa" && (
+              <div className="input-group">
+                <label htmlFor="2fa-code">6-Digit Verification Code</label>
+                <input
+                  id="2fa-code"
+                  type="text"
+                  maxLength={6}
+                  placeholder="000000"
+                  className="two-factor-code-input"
+                  value={twoFactorCode}
+                  onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ""))}
+                  autoFocus
+                  required
+                />
+                <div className="resend-row">
+                  <button
+                    type="button"
+                    className="resend-btn"
+                    onClick={handleResend2FA}
+                  >
+                    Resend new code
+                  </button>
+                </div>
+              </div>
+            )}
+
             {mode === "reset" && (
               <>
                 <div className="input-group">
-                  <label htmlFor="reset-token">Recovery Token</label>
+                  <label htmlFor="reset-token">6-Digit Recovery Code</label>
                   <input
                     id="reset-token"
                     type="text"
-                    placeholder="Paste your reset token"
+                    placeholder="Enter code"
                     value={resetToken}
                     onChange={(e) => setResetToken(e.target.value)}
                     required
@@ -371,15 +499,17 @@ export default function LoginDashboard({
               {loading
                 ? "Please wait..."
                 : mode === "login"
-                ? "Sign In to Studio"
-                : mode === "signup"
-                ? "Create Chef Account"
-                : mode === "forgot"
-                ? "Send Reset Instructions"
-                : "Save New Password"}
+                  ? "Sign In to Studio"
+                  : mode === "signup"
+                    ? "Create Chef Account"
+                    : mode === "forgot"
+                      ? "Send Reset Code"
+                      : mode === "reset"
+                        ? "Save New Password"
+                        : "Verify & Enter Studio"}
             </button>
 
-            {(mode === "forgot" || mode === "reset") && (
+            {(mode === "forgot" || mode === "reset" || mode === "2fa") && (
               <div className="back-to-login-row">
                 <button
                   type="button"
@@ -430,19 +560,6 @@ export default function LoginDashboard({
                 <span>{googleLoading ? "Connecting to Google..." : "Continue with Google"}</span>
               </button>
 
-              {!isFirebaseConfigured() && (
-                <div className="firebase-status-hint">
-                  <span>Firebase Google Auth requires configuration in .env</span>
-                  <button
-                    type="button"
-                    className="setup-guide-link-btn"
-                    onClick={() => setShowFirebaseGuide(true)}
-                  >
-                    View setup steps
-                  </button>
-                </div>
-              )}
-
               {onGuestContinue && (
                 <div className="guest-fallback-row">
                   <button
@@ -471,73 +588,132 @@ export default function LoginDashboard({
         </div>
       </div>
 
-      {/* Firebase Setup Modal */}
-      {showFirebaseGuide && (
-        <div className="firebase-guide-overlay" onClick={() => setShowFirebaseGuide(false)}>
-          <div className="firebase-guide-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="firebase-guide-header">
-              <div>
-                <h3>Firebase Google Authentication Setup</h3>
-                <p>Follow these 4 simple steps to connect Google Sign-In to Crave Recipe Studio.</p>
-              </div>
+      {/* Google Account Chooser Modal */}
+      {showGoogleChooser && (
+        <div className="google-chooser-overlay" onClick={() => setShowGoogleChooser(false)}>
+          <div className="google-chooser-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="google-chooser-header">
               <button
                 type="button"
-                className="guide-close-btn"
-                onClick={() => setShowFirebaseGuide(false)}
-                aria-label="Close dialog"
+                className="google-chooser-close"
+                onClick={() => setShowGoogleChooser(false)}
+                aria-label="Close"
               >
                 ✕
               </button>
-            </div>
-
-            <div className="firebase-guide-body">
-              <ol className="guide-steps">
-                <li>
-                  <strong>1. Open Google Firebase Console</strong>
-                  <p>Visit <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer">https://console.firebase.google.com/</a> and log in with your Google account.</p>
-                </li>
-                <li>
-                  <strong>2. Create or Select a Project</strong>
-                  <p>Click <em>Add project</em>, name it <code>crave-recipe-app</code>, and complete the quick wizard.</p>
-                </li>
-                <li>
-                  <strong>3. Enable Google Sign-In & Authorized Domain</strong>
-                  <p>In the sidebar, go to <strong>Build &gt; Authentication &gt; Sign-in method</strong>. Click <strong>Add new provider</strong>, choose <strong>Google</strong>, and enable it with your email.</p>
-                  <p>Under the <strong>Settings &gt; Authorized domains</strong> tab, verify <code>localhost</code> is in the list.</p>
-                </li>
-                <li>
-                  <strong>4. Copy Web App Keys to your <code>.env</code> file</strong>
-                  <p>Go to <strong>Project Settings &gt; General</strong>, scroll down to <em>Your apps</em>, click the Web (<code>&lt;/&gt;</code>) icon, and paste the values into your root <code>.env</code> file:</p>
-                  <pre className="env-code-preview">
-{`VITE_FIREBASE_API_KEY=AIzaSy...
-VITE_FIREBASE_AUTH_DOMAIN=crave-recipe-app.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=crave-recipe-app
-VITE_FIREBASE_STORAGE_BUCKET=crave-recipe-app.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=...
-VITE_FIREBASE_APP_ID=1:...:web:...`}
-                  </pre>
-                </li>
-              </ol>
-
-              <div className="guide-demo-creds">
-                <strong>Testing without Firebase setup:</strong>
-                <p>You can immediately log in using standard credentials:</p>
-                <ul>
-                  <li><strong>Admin Account:</strong> <code>naisha@test.com</code> / <code>password123</code> (Sole Administrator)</li>
-                  <li><strong>Standard Chef:</strong> <code>user@test.com</code> / <code>password123</code> (User Role)</li>
-                  <li>Or create any new chef account using the <strong>Create Account</strong> tab!</li>
-                </ul>
+              <div className="google-modal-logo">
+                <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  />
+                </svg>
               </div>
+              <h3>Choose an account</h3>
+              <p>to continue to Crave Recipe Studio</p>
             </div>
 
-            <div className="firebase-guide-footer">
+            <div className="google-accounts-list">
+              {/* Account 1: Naisha Jain (Sole Administrator) */}
               <button
                 type="button"
-                className="guide-primary-btn"
-                onClick={() => setShowFirebaseGuide(false)}
+                className="google-account-option"
+                onClick={() =>
+                  handleSelectGoogleAccount({
+                    name: "Naisha Jain",
+                    email: "naishajain982@gmail.com",
+                  })
+                }
               >
-                Got it, return to login
+                <div className="google-avatar avatar-naisha">N</div>
+                <div className="google-account-info">
+                  <div className="account-name">
+                    Naisha Jain
+                    <span className="account-badge badge-admin">Admin</span>
+                  </div>
+                  <div className="account-email">naishajain982@gmail.com</div>
+                </div>
               </button>
+
+              {/* Account 2: Alex Chef (Community Member) */}
+              <button
+                type="button"
+                className="google-account-option"
+                onClick={() =>
+                  handleSelectGoogleAccount({
+                    name: "Alex Chef",
+                    email: "chef.craverecipes@gmail.com",
+                  })
+                }
+              >
+                <div className="google-avatar avatar-chef">A</div>
+                <div className="google-account-info">
+                  <div className="account-name">
+                    Alex Chef
+                    <span className="account-badge">Chef</span>
+                  </div>
+                  <div className="account-email">chef.craverecipes@gmail.com</div>
+                </div>
+              </button>
+
+              {/* Account 3: Use Another Account Toggle */}
+              <button
+                type="button"
+                className="google-account-option"
+                onClick={() => setShowCustomGoogleInput(!showCustomGoogleInput)}
+              >
+                <div className="google-avatar avatar-custom">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                    <line x1="19" y1="8" x2="19" y2="14" />
+                    <line x1="16" y1="11" x2="22" y2="11" />
+                  </svg>
+                </div>
+                <div className="google-account-info">
+                  <div className="account-name">Use another account</div>
+                  <div className="account-email">Sign in with any custom Google account</div>
+                </div>
+              </button>
+            </div>
+
+            {/* Custom Account Input Accordion */}
+            {showCustomGoogleInput && (
+              <form onSubmit={handleCustomGoogleSubmit} className="google-custom-account-box">
+                <input
+                  type="text"
+                  placeholder="Full name (e.g. Maya Lin)"
+                  value={customGoogleName}
+                  onChange={(e) => setCustomGoogleName(e.target.value)}
+                  autoFocus
+                />
+                <input
+                  type="email"
+                  placeholder="Google email (e.g. maya@gmail.com)"
+                  value={customGoogleEmail}
+                  onChange={(e) => setCustomGoogleEmail(e.target.value)}
+                  required
+                />
+                <button type="submit" className="google-custom-submit-btn">
+                  Continue with this account
+                </button>
+              </form>
+            )}
+
+            <div className="google-chooser-footer">
+              To continue, Google will share your name, email address, and profile picture with Crave Recipe Studio.
             </div>
           </div>
         </div>

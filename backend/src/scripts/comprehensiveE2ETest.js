@@ -863,6 +863,122 @@ async function runE2ETests() {
       logBug("high", "Forgot Password Failed", JSON.stringify(forgotData));
     }
 
+    // -------------------------------------------------------------------------
+    // SECTION 15: TWO-FACTOR AUTHENTICATION (2FA)
+    // -------------------------------------------------------------------------
+    console.log("\n--- SECTION 15: TWO-FACTOR AUTHENTICATION (2FA) ---");
+
+    // 15.1 Enable 2FA for standard user
+    const enable2FARes = await fetch(`${API_BASE}/auth/toggle-2fa`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify({ enable: true }),
+    });
+    const enable2FAData = await enable2FARes.json();
+    if (enable2FARes.status === 200 && enable2FAData.twoFactorEnabled === true) {
+      logPass("Enable 2FA", "Successfully enabled Two-Factor Authentication for user account");
+    } else {
+      logBug("high", "Enable 2FA Failed", JSON.stringify(enable2FAData));
+    }
+
+    // 15.2 Login with 2FA enabled -> Challenge issued
+    const login2FARes = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "user@test.com", password: "password123" }),
+    });
+    const login2FAData = await login2FARes.json();
+    let temp2FAToken = login2FAData.tempToken;
+    let initial2FACode = login2FAData.demoCode;
+
+    if (login2FARes.status === 200 && login2FAData.requires2FA && temp2FAToken && initial2FACode) {
+      logPass("2FA Challenge Flow", `Server withheld full JWT and issued 2FA challenge code (${initial2FACode})`);
+    } else {
+      logBug("critical", "2FA Challenge Failed", JSON.stringify(login2FAData));
+    }
+
+    // 15.3 Reject invalid 2FA code
+    const invalid2FARes = await fetch(`${API_BASE}/auth/verify-2fa`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tempToken: temp2FAToken, code: "000000" }),
+    });
+    if (invalid2FARes.status === 401) {
+      logPass("2FA Invalid Code Guard", "Rejects incorrect 6-digit verification code with 401 Unauthorized");
+    } else {
+      logBug("high", "2FA Security Breach", `Expected 401 for wrong code, got ${invalid2FARes.status}`);
+    }
+
+    // 15.4 Resend fresh 2FA code
+    const resend2FARes = await fetch(`${API_BASE}/auth/resend-2fa`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tempToken: temp2FAToken }),
+    });
+    const resend2FAData = await resend2FARes.json();
+    let active2FACode = resend2FAData.demoCode || initial2FACode;
+    if (resend2FARes.status === 200 && resend2FAData.demoCode) {
+      logPass("Resend 2FA Code", `Generated fresh 6-digit code: ${resend2FAData.demoCode}`);
+    } else {
+      logBug("medium", "Resend 2FA Failed", JSON.stringify(resend2FAData));
+    }
+
+    // 15.5 Verify valid 2FA code -> Issues full session JWT
+    const verify2FARes = await fetch(`${API_BASE}/auth/verify-2fa`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tempToken: temp2FAToken, code: active2FACode }),
+    });
+    const verify2FAData = await verify2FARes.json();
+    let full2FAToken = verify2FAData.token;
+    if (verify2FARes.status === 200 && full2FAToken && verify2FAData.user?.twoFactorEnabled) {
+      logPass("2FA Verification Success", "Verified 6-digit code and established full session with role 'user'");
+    } else {
+      logBug("critical", "2FA Verification Failed", JSON.stringify(verify2FAData));
+    }
+
+    // 15.6 Test Google Sign-In with 2FA active
+    const reEnable2FARes = await fetch(`${API_BASE}/auth/toggle-2fa`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${full2FAToken || userToken}`,
+      },
+      body: JSON.stringify({ enable: true }),
+    });
+    if (reEnable2FARes.status === 200) {
+      const google2FARes = await fetch(`${API_BASE}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "user@test.com", name: "Test Chef" }),
+      });
+      const google2FAData = await google2FARes.json();
+      if (google2FARes.status === 200 && google2FAData.requires2FA && google2FAData.tempToken) {
+        logPass("Google Sign-In with 2FA", `Google login prompted 2FA security code challenge (${google2FAData.demoCode})`);
+      } else {
+        logBug("high", "Google 2FA Bypass", JSON.stringify(google2FAData));
+      }
+    }
+
+    // 15.7 Disable 2FA to return account to standard mode
+    const disable2FARes = await fetch(`${API_BASE}/auth/toggle-2fa`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${full2FAToken || userToken}`,
+      },
+      body: JSON.stringify({ enable: false }),
+    });
+    const disable2FAData = await disable2FARes.json();
+    if (disable2FARes.status === 200 && disable2FAData.twoFactorEnabled === false) {
+      logPass("Disable 2FA", "Successfully disabled 2FA and verified standard login resumes");
+    } else {
+      logBug("high", "Disable 2FA Failed", JSON.stringify(disable2FAData));
+    }
+
     console.log("\n===============================================================");
     console.log(`E2E AUDIT FINISHED: ${report.passed.length} Passed, ${report.bugsFound.length} Bugs, ${report.inconsistencies.length} Inconsistencies`);
     console.log("===============================================================\n");

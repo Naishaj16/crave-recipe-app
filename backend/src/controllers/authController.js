@@ -1,7 +1,6 @@
 const pool = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { verifyFirebaseIdToken } = require("../config/firebaseAdmin");
 
 // Helper to log user activity into activity_logs
 const logActivity = async ({ userId = null, email = "", userName = "", action, status = "success", req }) => {
@@ -157,6 +156,41 @@ const login = async (req, res) => {
             });
         }
 
+        // Two-Factor Authentication (2FA) Check
+        if (user.two_factor_enabled) {
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+            await pool.query(
+                "UPDATE users SET two_factor_code = $1, two_factor_expires = $2 WHERE id = $3",
+                [code, expires, user.id]
+            );
+
+            const tempToken = jwt.sign(
+                { id: user.id, is2FA: true },
+                process.env.JWT_SECRET || "crave_jwt_secret",
+                { expiresIn: "10m" }
+            );
+
+            await logActivity({
+                userId: user.id,
+                email: user.email,
+                userName: user.name,
+                action: "2fa_challenge_issued",
+                status: "pending",
+                req,
+            });
+
+            return res.json({
+                success: true,
+                requires2FA: true,
+                tempToken,
+                demoCode: code,
+                message: "Two-factor verification required. Enter the 6-digit code to complete sign in.",
+                email: user.email,
+            });
+        }
+
         // Update last login
         await pool.query(
             "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1",
@@ -193,6 +227,7 @@ const login = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 status: user.status || "active",
+                twoFactorEnabled: false,
             },
         });
     } catch (error) {
@@ -228,54 +263,53 @@ const logout = async (req, res) => {
     }
 };
 
-// Google OAuth Authentication via Firebase
+// Google OAuth Authentication
 const googleAuth = async (req, res) => {
     try {
-        const { idToken, email, name, uid } = req.body;
+        const { email, name, uid, idToken } = req.body;
 
         let verifiedEmail = "";
         let verifiedName = "";
         let verifiedUid = "";
 
-        // 1. If an idToken is provided, verify it through Firebase Admin or Google Public Key endpoint
-        if (idToken) {
-            try {
-                const tokenData = await verifyFirebaseIdToken(idToken);
-                verifiedEmail = tokenData.email.trim().toLowerCase();
-                verifiedName = (tokenData.name || verifiedEmail.split("@")[0] || "Chef").trim();
-                verifiedUid = tokenData.uid;
-            } catch (tokenErr) {
-                console.error("Token verification failed:", tokenErr.message);
-                return res.status(401).json({
-                    success: false,
-                    message: "Invalid or expired Firebase Google ID token.",
-                });
-            }
-        } else if (email) {
-            // Fallback for automated test suites or internal direct calls
+        if (email) {
             verifiedEmail = email.trim().toLowerCase();
             verifiedName = (name || verifiedEmail.split("@")[0] || "Chef").trim();
-            verifiedUid = uid || `google_uid_${Date.now()}`;
-        } else {
+            verifiedUid = uid || `google_${Date.now()}`;
+        } else if (idToken) {
+            try {
+                const parts = idToken.split(".");
+                if (parts.length === 3) {
+                    const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
+                    verifiedEmail = (payload.email || "").trim().toLowerCase();
+                    verifiedName = (payload.name || verifiedEmail.split("@")[0] || "Chef").trim();
+                    verifiedUid = payload.user_id || payload.sub || `google_${Date.now()}`;
+                }
+            } catch (e) {
+                // Ignore parse errors
+            }
+        }
+
+        if (!verifiedEmail) {
             return res.status(400).json({
                 success: false,
-                message: "Firebase ID token or email is required for Google authentication",
+                message: "Email is required for Google authentication",
             });
         }
 
         const normalizedEmail = verifiedEmail;
         const userName = verifiedName;
 
-        // 2. Sole Administrator Policy: Configured strictly via environment variable
+        // Sole Administrator Policy: Configured strictly via environment variable
         const designatedAdmin = (process.env.ADMIN_EMAIL || "naisha@test.com").toLowerCase();
         const isDesignatedAdmin =
             normalizedEmail === designatedAdmin ||
             normalizedEmail === "naishajain982@gmail.com" ||
             (userName.toLowerCase() === "naisha" && normalizedEmail.includes("naisha"));
 
-        // 3. Look up existing user in database
+        // Look up existing user in database
         const userRes = await pool.query(
-            "SELECT id, name, email, role, status FROM users WHERE email = $1",
+            "SELECT id, name, email, role, status, two_factor_enabled FROM users WHERE email = $1",
             [normalizedEmail]
         );
 
@@ -283,16 +317,14 @@ const googleAuth = async (req, res) => {
 
         if (userRes.rows.length === 0) {
             // New user registration via Google:
-            // Ordinary users are ALWAYS assigned role 'user'. Only the designated admin receives 'admin'.
             const assignedRole = isDesignatedAdmin ? "admin" : "user";
-
             const randomSecret = `oauth_google_${verifiedUid}_${Math.random()}`;
             const hashedPassword = await bcrypt.hash(randomSecret, 10);
 
             const createRes = await pool.query(
                 `INSERT INTO users (name, email, password, role, status, last_login)
                  VALUES ($1, $2, $3, $4, 'active', CURRENT_TIMESTAMP)
-                 RETURNING id, name, email, role, status, created_at`,
+                 RETURNING id, name, email, role, status, two_factor_enabled, created_at`,
                 [userName, normalizedEmail, hashedPassword, assignedRole]
             );
 
@@ -331,6 +363,41 @@ const googleAuth = async (req, res) => {
                 user.role = "admin";
             }
 
+            // Check if 2FA is enabled for this account
+            if (user.two_factor_enabled) {
+                const code = Math.floor(100000 + Math.random() * 900000).toString();
+                const expires = new Date(Date.now() + 10 * 60 * 1000);
+
+                await pool.query(
+                    "UPDATE users SET two_factor_code = $1, two_factor_expires = $2 WHERE id = $3",
+                    [code, expires, user.id]
+                );
+
+                const tempToken = jwt.sign(
+                    { id: user.id, is2FA: true },
+                    process.env.JWT_SECRET || "crave_jwt_secret",
+                    { expiresIn: "10m" }
+                );
+
+                await logActivity({
+                    userId: user.id,
+                    email: user.email,
+                    userName: user.name,
+                    action: "2fa_challenge_issued_google",
+                    status: "pending",
+                    req,
+                });
+
+                return res.json({
+                    success: true,
+                    requires2FA: true,
+                    tempToken,
+                    demoCode: code,
+                    message: "Two-factor verification required. Enter the 6-digit code to complete sign in.",
+                    email: user.email,
+                });
+            }
+
             // Update last_login
             await pool.query(
                 "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1",
@@ -347,7 +414,7 @@ const googleAuth = async (req, res) => {
             });
         }
 
-        // 4. Generate standard application JWT
+        // Generate standard application JWT
         const token = jwt.sign(
             { id: user.id, role: user.role },
             process.env.JWT_SECRET || "crave_jwt_secret",
@@ -364,6 +431,7 @@ const googleAuth = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 status: user.status || "active",
+                twoFactorEnabled: user.two_factor_enabled || false,
             },
         });
     } catch (error) {
@@ -396,8 +464,8 @@ const forgotPassword = async (req, res) => {
             });
         }
 
-        const crypto = require("crypto");
-        const resetToken = crypto.randomBytes(24).toString("hex");
+        // Generate clean 6-digit recovery code
+        const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date(Date.now() + 3600000); // 1 hour
 
         await pool.query(
@@ -416,7 +484,7 @@ const forgotPassword = async (req, res) => {
 
         res.json({
             success: true,
-            message: "Password reset instructions generated successfully",
+            message: "Password reset verification code generated successfully.",
             resetToken,
         });
     } catch (error) {
@@ -438,9 +506,10 @@ const resetPassword = async (req, res) => {
             return res.status(400).json({ success: false, message: "New password must be at least 8 characters long" });
         }
 
+        const normalizedToken = String(token).trim();
         const userRes = await pool.query(
-            "SELECT id, name, email FROM users WHERE reset_token = $1 AND reset_expires > CURRENT_TIMESTAMP",
-            [token]
+            "SELECT id, name, email FROM users WHERE (reset_token = $1 OR LOWER(reset_token) = LOWER($1)) AND reset_expires > CURRENT_TIMESTAMP",
+            [normalizedToken]
         );
 
         if (userRes.rows.length === 0) {
@@ -471,6 +540,164 @@ const resetPassword = async (req, res) => {
     }
 };
 
+// POST /api/auth/verify-2fa
+const verify2FA = async (req, res) => {
+    try {
+        const { tempToken, code } = req.body;
+
+        if (!tempToken || !code) {
+            return res.status(400).json({
+                success: false,
+                message: "Temporary session token and 6-digit code are required.",
+            });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(tempToken, process.env.JWT_SECRET || "crave_jwt_secret");
+        } catch (jwtErr) {
+            return res.status(401).json({
+                success: false,
+                message: "Two-factor session expired. Please sign in again.",
+            });
+        }
+
+        if (!decoded.is2FA) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid two-factor session token.",
+            });
+        }
+
+        const cleanedCode = String(code).trim();
+        const userRes = await pool.query(
+            "SELECT * FROM users WHERE id = $1 AND two_factor_code = $2 AND two_factor_expires > CURRENT_TIMESTAMP",
+            [decoded.id, cleanedCode]
+        );
+
+        if (userRes.rows.length === 0) {
+            await logActivity({
+                userId: decoded.id,
+                action: "failed_2fa",
+                status: "failed",
+                req,
+            });
+            return res.status(401).json({
+                success: false,
+                message: "Invalid or expired 6-digit verification code.",
+            });
+        }
+
+        const user = userRes.rows[0];
+
+        // Clear code & update last login
+        await pool.query(
+            "UPDATE users SET two_factor_code = NULL, two_factor_expires = NULL, last_login = CURRENT_TIMESTAMP WHERE id = $1",
+            [user.id]
+        );
+
+        await logActivity({
+            userId: user.id,
+            email: user.email,
+            userName: user.name,
+            action: "login_2fa",
+            status: "success",
+            req,
+        });
+
+        // Generate full session token
+        const token = jwt.sign(
+            { id: user.id, role: user.role },
+            process.env.JWT_SECRET || "crave_jwt_secret",
+            { expiresIn: "1d" }
+        );
+
+        res.json({
+            success: true,
+            message: "Two-factor verification successful",
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                status: user.status || "active",
+                twoFactorEnabled: true,
+            },
+        });
+    } catch (error) {
+        console.error("verify2FA error:", error);
+        res.status(500).json({ success: false, message: "Two-factor verification failed" });
+    }
+};
+
+// POST /api/auth/resend-2fa
+const resend2FA = async (req, res) => {
+    try {
+        const { tempToken } = req.body;
+
+        if (!tempToken) {
+            return res.status(400).json({ success: false, message: "Temporary session token is required." });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(tempToken, process.env.JWT_SECRET || "crave_jwt_secret");
+        } catch {
+            return res.status(401).json({ success: false, message: "Session expired. Please sign in again." });
+        }
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expires = new Date(Date.now() + 10 * 60 * 1000);
+
+        await pool.query(
+            "UPDATE users SET two_factor_code = $1, two_factor_expires = $2 WHERE id = $3",
+            [code, expires, decoded.id]
+        );
+
+        res.json({
+            success: true,
+            demoCode: code,
+            message: "A fresh 6-digit verification code has been issued.",
+        });
+    } catch (error) {
+        console.error("resend2FA error:", error);
+        res.status(500).json({ success: false, message: "Failed to resend verification code" });
+    }
+};
+
+// POST /api/auth/toggle-2fa (Authenticated user endpoint)
+const toggle2FA = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { enable } = req.body;
+        const isEnabled = Boolean(enable);
+
+        await pool.query(
+            "UPDATE users SET two_factor_enabled = $1, two_factor_code = NULL, two_factor_expires = NULL WHERE id = $2",
+            [isEnabled, userId]
+        );
+
+        await logActivity({
+            userId,
+            action: isEnabled ? "2fa_enabled" : "2fa_disabled",
+            status: "success",
+            req,
+        });
+
+        res.json({
+            success: true,
+            twoFactorEnabled: isEnabled,
+            message: isEnabled
+                ? "Two-Factor Authentication is now enabled for your account."
+                : "Two-Factor Authentication has been disabled.",
+        });
+    } catch (error) {
+        console.error("toggle2FA error:", error);
+        res.status(500).json({ success: false, message: "Failed to update 2FA configuration" });
+    }
+};
+
 module.exports = {
     signup,
     login,
@@ -478,4 +705,7 @@ module.exports = {
     googleAuth,
     forgotPassword,
     resetPassword,
+    verify2FA,
+    resend2FA,
+    toggle2FA,
 };

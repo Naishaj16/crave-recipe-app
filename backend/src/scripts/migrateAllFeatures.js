@@ -24,9 +24,13 @@ async function migrateAllFeatures() {
       ADD COLUMN IF NOT EXISTS dietary_preferences TEXT[] DEFAULT '{}',
       ADD COLUMN IF NOT EXISTS bio TEXT DEFAULT '',
       ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS reset_expires TIMESTAMP;
+      ADD COLUMN IF NOT EXISTS reset_expires TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS two_factor_code VARCHAR(10),
+      ADD COLUMN IF NOT EXISTS two_factor_expires TIMESTAMP;
     `);
-    console.log("Upgraded users table with dietary_preferences, bio, and reset_token.");
+    console.log("Upgraded users table with dietary_preferences, bio, reset_token, and 2FA columns.");
 
     // 3. Create 'recipe_reviews' table
     await pool.query(`

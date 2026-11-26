@@ -50,7 +50,7 @@ backend/
 │   │   └── uploadRoutes.js       # /api/upload/*
 │   ├── scripts/
 │   │   ├── migrateAllFeatures.js # Complete schema migration script for all 22 features
-│   │   └── comprehensiveE2ETest.js # 45-assertion end-to-end integration test suite
+│   │   └── comprehensiveE2ETest.js # 49-assertion end-to-end integration test suite
 │   └── server.js                 # Express server configuration, CORS & static uploads route
 ├── uploads/                      # Uploaded images and video files
 ├── package.json
@@ -75,6 +75,9 @@ CREATE TABLE users (
     dietary_preferences TEXT[] DEFAULT '{}',
     reset_token VARCHAR(255),
     reset_expires TIMESTAMP,
+    two_factor_enabled BOOLEAN DEFAULT FALSE,
+    two_factor_code VARCHAR(10),
+    two_factor_expires TIMESTAMP,
     last_login TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -175,13 +178,16 @@ Append-only security and session audit trail tracking login, logout, password re
 
 ## 4. RESTful API Endpoint Reference
 
-### 4.1. Authentication & Password Recovery (`/api/auth`)
+### 4.1. Authentication, 2FA & Password Recovery (`/api/auth`)
 - `POST /api/auth/signup`: Register new account with name, email, password (min 8 chars).
-- `POST /api/auth/login`: Authenticate credentials, check for disabled status, return JWT and user profile.
+- `POST /api/auth/login`: Authenticate credentials, evaluate Two-Factor Authentication (2FA). If 2FA is active, withholds session JWT and returns challenge token + 6-digit code.
+- `POST /api/auth/verify-2fa`: Validates challenge token and 6-digit verification code, issuing full session JWT.
+- `POST /api/auth/resend-2fa`: Generates and dispatches a fresh 6-digit verification code.
+- `POST /api/auth/toggle-2fa`: Protected endpoint allowing authenticated users to enable or disable 2FA for their account.
 - `POST /api/auth/logout`: Log out user and record logout event in audit trail.
 - `POST /api/auth/google`: Firebase Google OAuth authentication; resolves Naisha to `admin` and all others to `user`.
-- `POST /api/auth/forgot-password`: Generates cryptographic 1-hour reset token and logs activity.
-- `POST /api/auth/reset-password`: Verifies reset token and updates password hash.
+- `POST /api/auth/forgot-password`: Generates 6-digit recovery code (1-hour expiration) and logs activity.
+- `POST /api/auth/reset-password`: Verifies recovery code and updates password hash.
 
 ### 4.2. Recipe Management & Advanced Search (`/api/recipes`)
 - `GET /api/recipes`: Public feed with parameterized query filters (`category`, `difficulty`, `maxTime`, `dietary`, `search`, and `ingredients` for pantry matching). Soft-deleted recipes are strictly excluded.

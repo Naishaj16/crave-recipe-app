@@ -2547,13 +2547,33 @@ footer>span {
 }
 
 .login-error-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   background: #fef2f2;
   color: #991b1b;
   border: 1px solid #fecaca;
   padding: 10px 14px;
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
   margin-bottom: 16px;
+  line-height: 1.45;
+}
+
+.alert-dismiss-btn {
+  background: transparent;
+  border: none;
+  color: currentColor;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 0 4px;
+  opacity: 0.65;
+  margin-left: auto;
+  line-height: 1;
+}
+
+.alert-dismiss-btn:hover {
+  opacity: 1;
 }
 
 .login-dashboard-form {
@@ -4693,190 +4713,402 @@ footer>span {
   border-color: rgba(34, 197, 94, 0.3);
 }
 
-/* Firebase Setup Helper Modal & Status Hint */
-.firebase-status-hint {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  background: #fbfaf6;
-  border: 1px dashed #dedbd0;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 11.5px;
-  color: #63685a;
-  margin-top: 10px;
-}
-
-.setup-guide-link-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  color: #273e2b;
-  font-size: 11.5px;
-  font-weight: 600;
-  text-decoration: underline;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.setup-guide-link-btn:hover {
-  color: #152217;
-}
-
-.firebase-guide-overlay {
+/* Google Account Chooser Modal */
+.google-chooser-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(18, 22, 17, 0.6);
+  background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  padding: 20px;
+  padding: 16px;
+  animation: fadeIn 0.15s ease-out;
 }
 
-.firebase-guide-modal {
+.google-chooser-modal {
   background: #ffffff;
-  border-radius: 14px;
-  max-width: 620px;
+  border-radius: 16px;
   width: 100%;
-  max-height: 90vh;
+  max-width: 440px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
-  border: 1px solid #e5e3d8;
-  overflow: hidden;
 }
 
-.firebase-guide-header {
-  padding: 22px 26px 18px;
-  border-bottom: 1px solid #eeede6;
+.google-chooser-header {
+  padding: 24px 24px 16px;
+  text-align: center;
+  position: relative;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.google-chooser-header .google-modal-logo {
   display: flex;
-  align-items: flex-start;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.google-chooser-header h3 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 19px;
+  font-weight: 500;
+  color: #202124;
+  margin: 0 0 4px;
+}
+
+.google-chooser-header p {
+  font-size: 13.5px;
+  color: #5f6368;
+  margin: 0;
+}
+
+.google-chooser-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #5f6368;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.google-chooser-close:hover {
+  background: #f1f3f4;
+  color: #202124;
+}
+
+.google-accounts-list {
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.google-account-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.google-account-option:hover {
+  background: #f8f9fa;
+}
+
+.google-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 15px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.google-avatar.avatar-naisha {
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+}
+
+.google-avatar.avatar-chef {
+  background: linear-gradient(135deg, #065f46, #10b981);
+}
+
+.google-avatar.avatar-custom {
+  background: #f1f3f4;
+  color: #5f6368;
+}
+
+.google-account-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.google-account-info .account-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #202124;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.google-account-info .account-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e8f0fe;
+  color: #1967d2;
+}
+
+.google-account-info .account-badge.badge-admin {
+  background: #e6f4ea;
+  color: #137333;
+}
+
+.google-account-info .account-email {
+  font-size: 12.5px;
+  color: #5f6368;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.google-custom-account-box {
+  padding: 12px 24px 16px;
+  border-top: 1px solid #f1f3f4;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.google-custom-account-box input {
+  padding: 9px 12px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+}
+
+.google-custom-account-box input:focus {
+  border-color: #1a73e8;
+}
+
+.google-custom-submit-btn {
+  background: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.google-custom-submit-btn:hover {
+  background: #1765cc;
+}
+
+.google-chooser-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f1f3f4;
+  background: #ffffff;
+  font-size: 11.5px;
+  color: #5f6368;
+  line-height: 1.45;
+}
+
+/* Two-Factor Authentication (2FA) & Security Styles */
+.two-factor-code-input {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  font-size: 24px !important;
+  letter-spacing: 6px;
+  text-align: center;
+  font-weight: 700;
+  padding: 12px 14px !important;
+  color: #1e251d;
+  background: #fafaf8;
+  border: 2px solid #3c5437 !important;
+  border-radius: 8px;
+}
+
+.two-factor-code-input:focus {
+  outline: none;
+  border-color: #273e2b !important;
+  box-shadow: 0 0 0 3px rgba(39, 62, 43, 0.15);
+}
+
+.security-code-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #f0fdf4;
+  border: 1px dashed #86efac;
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: #166534;
+  font-size: 13px;
+  line-height: 1.45;
+  margin-bottom: 16px;
+}
+
+.security-code-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.security-code-chip {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: #15803d;
+  background: #dcfce7;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid #bbf7d0;
+}
+
+.resend-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.resend-btn {
+  background: transparent;
+  border: none;
+  color: #4b6343;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px;
+}
+
+.resend-btn:hover {
+  color: #273e2b;
+}
+
+/* Profile 2FA Card */
+.profile-security-card {
+  background: #fcfbf9;
+  border: 1px solid #e5e3d8;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
 
-.firebase-guide-header h3 {
-  font-family: Georgia, serif;
-  font-size: 20px;
-  color: #1d221b;
-  margin: 0 0 6px;
-}
-
-.firebase-guide-header p {
-  font-size: 13px;
-  color: #61675b;
-  margin: 0;
-}
-
-.guide-close-btn {
-  background: transparent;
-  border: none;
-  font-size: 20px;
-  line-height: 1;
-  color: #8c9085;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.guide-close-btn:hover {
-  color: #222;
-}
-
-.firebase-guide-body {
-  padding: 22px 26px;
-  overflow-y: auto;
-  font-size: 13.5px;
-  color: #3b4034;
-  line-height: 1.55;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.guide-steps {
-  padding-left: 20px;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.guide-steps li strong {
-  color: #273e2b;
-  display: block;
-  margin-bottom: 3px;
-}
-
-.guide-steps li p {
-  margin: 0 0 4px;
-  color: #555c4d;
-}
-
-.guide-steps code,
-.firebase-status-hint code {
-  background: #f0eee5;
-  color: #273e2b;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-family: monospace;
-}
-
-.env-code-preview {
-  background: #1f251c;
-  color: #a7f3d0;
-  padding: 12px 14px;
-  border-radius: 8px;
-  font-family: monospace;
-  font-size: 11.5px;
-  line-height: 1.5;
-  overflow-x: auto;
-  margin: 6px 0 0;
-}
-
-.guide-demo-creds {
-  background: #f6f5ef;
-  border: 1px solid #e3e0d2;
-  border-radius: 8px;
-  padding: 14px 16px;
-  font-size: 12.5px;
-}
-
-.guide-demo-creds strong {
-  color: #273e2b;
-}
-
-.guide-demo-creds ul {
-  margin: 8px 0 0;
-  padding-left: 18px;
+.security-card-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.firebase-guide-footer {
-  padding: 16px 26px;
-  border-top: 1px solid #eeede6;
-  background: #fafaf7;
+.security-title-row {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
 }
 
-.guide-primary-btn {
-  background: #273e2b;
-  color: #ffffff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
+.security-title-row strong {
+  font-size: 14px;
+  color: #1f251c;
+}
+
+.security-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.security-badge.active {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.security-badge.inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+.security-card-info p {
+  font-size: 12.5px;
+  color: #63685c;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.security-toggle-btn {
+  background: #ffffff;
+  border: 1px solid #d4d1c6;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12.5px;
   font-weight: 600;
-  font-size: 13.5px;
+  color: #2b3327;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.15s;
+  white-space: nowrap;
 }
 
-.guide-primary-btn:hover {
-  background: #1b2c1e;
+.security-toggle-btn:hover {
+  background: #f4f3ec;
+  border-color: #4b6343;
+}
+
+.security-toggle-btn.btn-disable {
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.security-toggle-btn.btn-disable:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+[data-theme="dark"] .two-factor-code-input {
+  background: #171d18;
+  color: #f0fdf4;
+  border-color: #5e7a58 !important;
+}
+
+[data-theme="dark"] .security-code-banner {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #86efac;
+}
+
+[data-theme="dark"] .security-code-chip {
+  background: rgba(34, 197, 94, 0.2);
+  color: #a7f3d0;
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+[data-theme="dark"] .profile-security-card {
+  background: #1c221e;
+  border-color: #2e3831;
+}
+
+[data-theme="dark"] .security-title-row strong {
+  color: #ecf0ea;
+}
+
+[data-theme="dark"] .security-card-info p {
+  color: #9ba398;
+}
+
+[data-theme="dark"] .security-toggle-btn {
+  background: #252d27;
+  border-color: #3b473e;
+  color: #ecf0ea;
 }

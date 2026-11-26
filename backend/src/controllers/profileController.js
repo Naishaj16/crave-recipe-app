@@ -10,7 +10,7 @@ const getProfile = async (req, res) => {
     const userId = req.user.id;
 
     const userRes = await pool.query(
-      `SELECT id, name, email, role, status, bio, dietary_preferences, created_at, last_login
+      `SELECT id, name, email, role, status, bio, dietary_preferences, created_at, last_login, two_factor_enabled
        FROM users WHERE id = $1`,
       [userId]
     );
@@ -43,6 +43,7 @@ const getProfile = async (req, res) => {
       success: true,
       profile: {
         ...user,
+        twoFactorEnabled: Boolean(user.two_factor_enabled),
         createdRecipesCount: parseInt(recipesCountRes.rows[0].count, 10),
         favoritesCount: parseInt(favCountRes.rows[0].count, 10),
         recipes: createdRecipes.rows,
